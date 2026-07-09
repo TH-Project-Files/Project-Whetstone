@@ -71,6 +71,15 @@ operator declares it **L3** in the run-config; the adapter itself need not know 
 5. **Determinism aids reproduction.** Pin model/version/seed where the target allows it, and
    record them in the raw log, so an L2 finding can be re-run.
 
+> **Enforcement, not just intent.** Rules 1–2 are enforced in code, not left to good behavior: the
+> harness never calls `execute()` directly. It calls the **safety wrapper** `safety/safe-execute.mjs`,
+> which runs the non-bypassable blast-radius guard (`safety/blast-radius-guard.mjs`) — refusing any
+> L2/L3 run unless a sandbox is active and the target endpoint is recognizably non-production — then
+> locks the target's env to mock infrastructure, seeds state, enforces a timeout, and guarantees
+> teardown. When you write an `execute()`, make it accept the wrapper's `ctx` (`{ env, signal,
+> sandboxHandle }`) and use `ctx.env` **only** — never ambient `process.env` — so the environment
+> lock actually holds. See `playbooks/SANDBOXING.md`.
+
 ## Choosing a fidelity strategy
 
 | Adapter implements | Max fidelity | Good for |
