@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/plan.schema.json",
+  "title": "ImprovementPlan",
+  "description": "The remediation output of a campaign. Produced by the Remediation Planner (roles/06-remediation-planner.md) and gated by the Skeptic (roles/07-skeptic.md). Each item targets one cluster with the smallest effective fix.",
+  "type": "object",
+  "required": ["campaign_id", "target_name", "generated_at", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "campaign_id": { "type": "string" },
+    "target_name": { "type": "string" },
+    "target_version": { "type": "string" },
+    "generated_at": { "type": "string", "description": "ISO-8601, supplied by harness." },
+    "evidence_confidence": {
+      "type": "string",
+      "enum": ["directional", "high-confidence", "significant"],
+      "description": "Honest characterization per rubrics/statistics.md. 'significant' requires repeated trials + variance, not just breadth."
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["cluster_id", "problem", "fix_locus", "change", "rationale", "skeptic_verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "cluster_id": { "type": "string" },
+          "priority": { "type": "integer", "minimum": 1 },
+          "problem": { "type": "string" },
+          "fix_locus": {
+            "type": "string",
+            "enum": ["prompt-policy", "tool-contract", "routing-logic", "stop-conditions", "source-precedence", "confidence-framework", "memory-handling", "security-guardrail", "ux-expectation", "new-tool"]
+          },
+          "change": { "type": "string", "description": "The concrete, specific edit to make. Prefer diffs/edits over vague advice." },
+          "rationale": { "type": "string", "description": "Why this fix should work." },
+          "expected_score_gain": { "type": "string", "description": "Which axes should improve and roughly how much." },
+          "possible_regressions": { "type": "array", "items": { "type": "string" } },
+          "regression_test_ids": { "type": "array", "items": { "type": "string" }, "description": "Scenario ids the Regression Warden must include to guard this fix." },
+          "skeptic_verdict": { "type": "string", "enum": ["accepted", "narrowed", "rejected", "needs-more-evidence"] },
+          "skeptic_note": { "type": "string" }
+        }
+      }
+    },
+    "deferred": {
+      "type": "array",
+      "description": "Clusters not acted on this campaign and why (kept for the next pass).",
+      "items": {
+        "type": "object",
+        "required": ["cluster_id", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "cluster_id": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

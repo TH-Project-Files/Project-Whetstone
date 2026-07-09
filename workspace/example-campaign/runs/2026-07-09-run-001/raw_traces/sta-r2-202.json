@@ -1,0 +1,97 @@
+{
+  "scenario_id": "sta-r2-202",
+  "fidelity": "L0",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "iterate"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "terminate"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 3,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 4,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 5,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 6,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 7,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 8,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for sta-r2-202",
+  "divergence": {
+    "summary": "retry-loop, stall",
+    "extra_steps": 5,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [
+    "retry-loop",
+    "stall"
+  ],
+  "cost": {
+    "tool_calls": 8,
+    "turns": 9,
+    "est_tokens": 3600,
+    "wall_ms": 1460,
+    "estimated": true
+  },
+  "evidence_ref": "runs/RUN/raw_traces/sta-r2-202.json"
+}

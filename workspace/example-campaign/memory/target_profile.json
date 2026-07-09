@@ -1,0 +1,64 @@
+{
+  "target_name": "ExampleAgent",
+  "version": "0.0.0",
+  "shape": {
+    "orchestration": "orchestrator-subagents",
+    "subagents": [
+      "reader",
+      "analyst"
+    ],
+    "entry_points": [
+      "cli"
+    ]
+  },
+  "tools": [
+    {
+      "name": "lookup_entity",
+      "kind": "read",
+      "purpose": "single-entity status"
+    },
+    {
+      "name": "aggregate_scan",
+      "kind": "read",
+      "purpose": "batch/aggregate query"
+    },
+    {
+      "name": "apply_change",
+      "kind": "write",
+      "purpose": "state change",
+      "gated_by": "HITL"
+    }
+  ],
+  "routing": [
+    {
+      "intent": "single-entity-lookup",
+      "expected_handler": "reader",
+      "expected_tools": [
+        "lookup_entity"
+      ]
+    }
+  ],
+  "constraints": {
+    "call_budget": null,
+    "output_char_limit": 50000,
+    "max_turns": 25,
+    "guards": [
+      "loop-guard"
+    ]
+  },
+  "known_outages": [
+    "SOURCE-2"
+  ],
+  "source_precedence": [
+    "telemetry",
+    "directory",
+    "free-text-note"
+  ],
+  "failure_domains": [
+    "fleet-scale aggregation",
+    "known-outage retries",
+    "cross-source contradiction"
+  ],
+  "capability_gaps_known": [],
+  "captured_at": "2026-07-09T00:00:00Z"
+}

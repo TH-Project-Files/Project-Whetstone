@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/scenario.schema.json",
+  "title": "Scenario",
+  "description": "One reproducible test case. Produced by the Scenario Smith (roles/02-scenario-smith.md). The prompt field is the exact input handed to the target.",
+  "type": "object",
+  "required": ["scenario_id", "mode", "category", "objective", "prompt", "scoring_emphasis", "fingerprint"],
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": { "type": "string", "description": "Stable id, e.g. 'eff-r1-007'." },
+    "mode": {
+      "type": "string",
+      "enum": ["efficiency", "tool-coverage", "agent-logic", "stall-conditions", "security", "behavioral-hardening", "prompt-injection", "instruction-following"]
+    },
+    "category": { "type": "string", "description": "Scenario family within the mode (from modes/<mode>.md)." },
+    "style": { "type": "string", "enum": ["realistic", "ambiguous", "adversarial", "edge_case", "stress"] },
+    "objective": { "type": "string", "description": "What this scenario is trying to reveal about the target." },
+    "prompt": { "type": "string", "description": "The verbatim user input given to the target." },
+    "injected_context": {
+      "type": "array",
+      "description": "Simulated external/tool-returned content (for indirect prompt-injection and cross-source scenarios). This is untrusted data, never instructions.",
+      "items": {
+        "type": "object",
+        "required": ["source", "content"],
+        "additionalProperties": false,
+        "properties": {
+          "source": { "type": "string", "description": "Which tool/source appears to return this." },
+          "content": { "type": "string" }
+        }
+      }
+    },
+    "hidden_difficulty": { "type": "array", "items": { "type": "string" }, "description": "Factors that make this harder than it looks." },
+    "expected_ideal_path": {
+      "type": "array",
+      "description": "The Smith's hypothesis of the correct execution path; the Judge scores divergence against it but is not bound by it.",
+      "items": { "type": "string" }
+    },
+    "likely_failure_risks": { "type": "array", "items": { "type": "string" } },
+    "scoring_emphasis": {
+      "type": "array",
+      "description": "Axes this scenario most stresses (subset of run-config.scoring.axes).",
+      "items": { "type": "string" }
+    },
+    "provenance": { "type": "string", "enum": ["internal", "provider-import", "historic-incident", "mutation"], "default": "internal" },
+    "fingerprint": { "$ref": "https://whetstone.kit/schemas/fingerprint.schema.json" }
+  }
+}

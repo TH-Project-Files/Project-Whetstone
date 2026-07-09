@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/run-config.schema.json",
+  "title": "RunConfig",
+  "description": "Operator configuration for one polishing campaign. Read by the Controller (roles/00-controller.md).",
+  "type": "object",
+  "required": ["target_name", "campaign_id", "evaluation_modes", "fidelity", "scenario_plan", "scoring", "stopping_rule"],
+  "additionalProperties": false,
+  "properties": {
+    "target_name": { "type": "string", "description": "Human name of the target agent under test." },
+    "campaign_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "Slug; also the workspace/<campaign_id>/ directory name." },
+    "adapter": {
+      "type": "string",
+      "description": "Which adapter binds the loop to the target. See adapters/ADAPTER_CONTRACT.md.",
+      "examples": ["simulation", "cli", "http"]
+    },
+    "evaluation_modes": {
+      "type": "array",
+      "description": "Which modular dimension packs (modes/*.md) are enabled for this campaign.",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/mode" },
+      "uniqueItems": true
+    },
+    "fidelity": {
+      "type": "object",
+      "description": "Hybrid-fidelity controls. See rubrics/fidelity-ladder.md.",
+      "required": ["default_level", "real_execution_sample_rate"],
+      "additionalProperties": false,
+      "properties": {
+        "default_level": { "$ref": "#/$defs/fidelityLevel", "description": "Fidelity applied to every scenario before sampling (usually L0)." },
+        "real_execution_sample_rate": { "type": "number", "minimum": 0, "maximum": 1, "description": "Fraction of scenarios promoted to real execution (L2+). 0 = simulation-only." },
+        "sample_strategy": { "type": "string", "enum": ["random", "stratified", "highest-risk-first"], "default": "stratified" }
+      }
+    },
+    "scenario_plan": {
+      "type": "object",
+      "required": ["count_per_round", "mix"],
+      "additionalProperties": false,
+      "properties": {
+        "count_per_round": { "type": "integer", "minimum": 1 },
+        "mix": {
+          "type": "object",
+          "description": "Fractional blend of scenario styles; values should sum to ~1.0.",
+          "additionalProperties": false,
+          "properties": {
+            "realistic": { "type": "number", "minimum": 0, "maximum": 1 },
+            "ambiguous": { "type": "number", "minimum": 0, "maximum": 1 },
+            "adversarial": { "type": "number", "minimum": 0, "maximum": 1 },
+            "edge_case": { "type": "number", "minimum": 0, "maximum": 1 },
+            "stress": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "max_repeat_similarity": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.82, "description": "Fingerprint similarity above which a new scenario is rejected as a near-duplicate." },
+        "seed_sets": {
+          "type": "array",
+          "description": "External scenario sources to blend in (see seed-imports/PROVIDER_IMPORT_CONTRACT.md).",
+          "items": { "type": "string", "examples": ["internal_templates", "provider_import:gpt", "provider_import:gemini", "historic_incidents"] }
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "required": ["axes", "judge_panel_size"],
+      "additionalProperties": false,
+      "properties": {
+        "axes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/axis" }, "uniqueItems": true },
+        "judge_panel_size": { "type": "integer", "minimum": 1, "description": "Independent judges per scored run; >1 enables inter-rater agreement (rubrics/statistics.md)." },
+        "weighting_profile": { "type": "string", "default": "default", "description": "Named weighting from rubrics/weighting.md." }
+      }
+    },
+    "stopping_rule": {
+      "type": "object",
+      "description": "Convergence criteria. See rubrics/statistics.md.",
+      "required": ["dry_rounds", "min_samples_per_cell"],
+      "additionalProperties": false,
+      "properties": {
+        "dry_rounds": { "type": "integer", "minimum": 1, "default": 2, "description": "Consecutive rounds with no new fingerprinted cluster required to declare convergence." },
+        "min_samples_per_cell": { "type": "integer", "minimum": 1, "default": 5, "description": "Minimum scenarios per coverage-matrix cell before conclusions are drawn." },
+        "max_rounds": { "type": "integer", "minimum": 1 },
+        "max_output_tokens": { "type": "integer", "minimum": 1, "description": "Hard budget ceiling for the whole campaign." }
+      }
+    },
+    "memory_mode": { "type": "string", "enum": ["append_only"], "default": "append_only" },
+    "notes": { "type": "string" }
+  },
+  "$defs": {
+    "mode": {
+      "type": "string",
+      "enum": ["efficiency", "tool-coverage", "agent-logic", "stall-conditions", "security", "behavioral-hardening", "prompt-injection", "instruction-following"]
+    },
+    "fidelityLevel": { "type": "string", "enum": ["L0", "L1", "L2", "L3"] },
+    "axis": {
+      "type": "string",
+      "enum": ["correctness", "consistency", "robustness", "safety", "efficiency", "tool-economy", "stall-resistance", "clarity", "fallback-quality", "confidence-discipline", "source-precedence", "auditability"]
+    }
+  }
+}

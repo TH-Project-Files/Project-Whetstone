@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/target-profile.schema.json",
+  "title": "TargetProfile",
+  "description": "Characterization of the agent under test. Produced by the Cartographer (roles/01-cartographer.md) from the adapter's describe() output. Project-agnostic: nothing here names a specific target.",
+  "type": "object",
+  "required": ["target_name", "captured_at", "shape", "tools", "constraints", "failure_domains"],
+  "additionalProperties": false,
+  "properties": {
+    "target_name": { "type": "string" },
+    "version": { "type": "string", "description": "Target build/version if known; conclusions are version-scoped." },
+    "captured_at": { "type": "string", "description": "ISO-8601 timestamp the profile was captured. Provided by the operator/harness (never invented)." },
+    "shape": {
+      "type": "object",
+      "description": "Structural overview of the agent.",
+      "additionalProperties": false,
+      "properties": {
+        "orchestration": { "type": "string", "enum": ["single-agent", "orchestrator-subagents", "pipeline", "graph", "other"] },
+        "subagents": { "type": "array", "items": { "type": "string" } },
+        "model_tiers": { "type": "array", "items": { "type": "string" } },
+        "entry_points": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tools": {
+      "type": "array",
+      "description": "Tool catalog the agent can call.",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "kind": { "type": "string", "enum": ["read", "write", "external-action", "meta"] },
+          "purpose": { "type": "string" },
+          "owner": { "type": "string", "description": "Which subagent/layer holds this tool, if applicable." },
+          "gated_by": { "type": "string", "description": "Any HITL/tier/flag gate on this tool." }
+        }
+      }
+    },
+    "routing": {
+      "type": "array",
+      "description": "Expected routing rules: intent class -> which layer/subagent/tool handles it.",
+      "items": {
+        "type": "object",
+        "required": ["intent", "expected_handler"],
+        "additionalProperties": false,
+        "properties": {
+          "intent": { "type": "string" },
+          "expected_handler": { "type": "string" },
+          "expected_tools": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Hard limits that bound realistic execution.",
+      "additionalProperties": false,
+      "properties": {
+        "call_budget": { "type": ["integer", "null"], "description": "Session-wide tool-call ceiling, or null if none exists (itself a finding)." },
+        "output_char_limit": { "type": ["integer", "null"] },
+        "max_turns": { "type": ["integer", "null"] },
+        "guards": { "type": "array", "items": { "type": "string" }, "description": "Named guardrails (loop-guard, input validators, SSRF, etc.)." }
+      }
+    },
+    "known_outages": {
+      "type": "array",
+      "description": "Sources/tools currently unavailable — simulation must respect these.",
+      "items": { "type": "string" }
+    },
+    "source_precedence": {
+      "type": "array",
+      "description": "When sources disagree, the declared authority order.",
+      "items": { "type": "string" }
+    },
+    "failure_domains": {
+      "type": "array",
+      "description": "A-priori areas the target is expected to be weak in; seeds scenario emphasis but never presumes the verdict.",
+      "items": { "type": "string" }
+    },
+    "capability_gaps_known": {
+      "type": "array",
+      "description": "Questions the target legitimately cannot answer (used to score tool-coverage fairly).",
+      "items": { "type": "string" }
+    }
+  }
+}

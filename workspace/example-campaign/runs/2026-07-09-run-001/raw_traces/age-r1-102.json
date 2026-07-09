@@ -1,0 +1,95 @@
+{
+  "scenario_id": "age-r1-102",
+  "fidelity": "L2",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "gather"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "reconcile"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "precedence"
+    },
+    {
+      "n": 3,
+      "actor": "orchestrator",
+      "action": "answer"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 3,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 4,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 5,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 6,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 7,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for age-r1-102",
+  "divergence": {
+    "summary": "unsupported-inference",
+    "extra_steps": 3,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [
+    "unsupported-inference"
+  ],
+  "cost": {
+    "tool_calls": 7,
+    "turns": 8,
+    "est_tokens": 3300,
+    "wall_ms": 1340,
+    "estimated": false
+  },
+  "evidence_ref": "runs/RUN/raw_traces/age-r1-102.json"
+}

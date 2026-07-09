@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/trace.schema.json",
+  "title": "ExecutionTrace",
+  "description": "Line-by-line reconstruction of a run. Produced by the Run Simulator (roles/03-run-simulator.md). At L0 the actual_path is a prediction; at L2+ it is captured from a real run via the adapter. Fidelity governs how much weight downstream conclusions carry (rubrics/fidelity-ladder.md).",
+  "type": "object",
+  "required": ["scenario_id", "fidelity", "actual_path", "divergence", "cost"],
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": { "type": "string" },
+    "fidelity": { "type": "string", "enum": ["L0", "L1", "L2", "L3"], "description": "L0 design-prediction, L1 code-path execution, L2 end-to-end run, L3 live-environment." },
+    "adapter": { "type": "string", "description": "Adapter that produced this trace." },
+    "ideal_path": { "type": "array", "items": { "$ref": "#/$defs/step" }, "description": "The best-case route (from the scenario's expected_ideal_path, expanded)." },
+    "actual_path": {
+      "type": "array",
+      "description": "The route the target took (real) or is predicted to take (simulated).",
+      "items": { "$ref": "#/$defs/step" }
+    },
+    "final_answer": { "type": "string", "description": "The target's final user-facing output (captured verbatim at L2+, predicted at L0)." },
+    "divergence": {
+      "type": "object",
+      "description": "How actual differs from ideal.",
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string" },
+        "extra_steps": { "type": "integer", "minimum": 0 },
+        "missing_steps": { "type": "integer", "minimum": 0 },
+        "wrong_order": { "type": "boolean" }
+      }
+    },
+    "annotations": {
+      "type": "array",
+      "description": "Flags the Simulator must surface when present.",
+      "items": {
+        "type": "string",
+        "enum": ["unnecessary-call", "duplicate-work", "schema-discovery", "retry-loop", "escalation-miss", "unsupported-inference", "confidence-mismatch", "policy-breach", "injection-exposure", "instruction-drift", "stall", "truncation"]
+      }
+    },
+    "cost": {
+      "type": "object",
+      "description": "Resource profile. Real values at L2+; estimates at L0 (mark estimated:true).",
+      "additionalProperties": false,
+      "properties": {
+        "tool_calls": { "type": "integer", "minimum": 0 },
+        "turns": { "type": "integer", "minimum": 0 },
+        "est_tokens": { "type": "integer", "minimum": 0 },
+        "wall_ms": { "type": "integer", "minimum": 0 },
+        "estimated": { "type": "boolean", "default": true }
+      }
+    },
+    "evidence_ref": { "type": "string", "description": "Path to the raw trace/log this record summarizes (runs/<run>/raw_traces/<scenario_id>.*)." }
+  },
+  "$defs": {
+    "step": {
+      "type": "object",
+      "required": ["n", "actor", "action"],
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": "integer", "minimum": 0 },
+        "actor": { "type": "string", "description": "orchestrator | <subagent-name> | tool | user." },
+        "rationale": { "type": "string" },
+        "action": { "type": "string", "description": "Tool call, delegation, or response emitted." },
+        "output_shape": { "type": "string", "description": "Shape/summary of what came back (not full payload)." },
+        "risk_note": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "scenario_id": "age-r1-100",
+  "fidelity": "L0",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "gather"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "reconcile"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "precedence"
+    },
+    {
+      "n": 3,
+      "actor": "orchestrator",
+      "action": "answer"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for age-r1-100",
+  "divergence": {
+    "summary": "clean",
+    "extra_steps": 0,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [],
+  "cost": {
+    "tool_calls": 2,
+    "turns": 3,
+    "est_tokens": 1800,
+    "wall_ms": 740,
+    "estimated": true
+  },
+  "evidence_ref": "runs/RUN/raw_traces/age-r1-100.json"
+}

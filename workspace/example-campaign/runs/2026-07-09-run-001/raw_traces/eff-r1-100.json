@@ -1,0 +1,58 @@
+{
+  "scenario_id": "eff-r1-100",
+  "fidelity": "L0",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "resolve-subject"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "single-status"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "answer"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for eff-r1-100",
+  "divergence": {
+    "summary": "clean",
+    "extra_steps": 0,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [],
+  "cost": {
+    "tool_calls": 2,
+    "turns": 3,
+    "est_tokens": 1800,
+    "wall_ms": 740,
+    "estimated": true
+  },
+  "evidence_ref": "runs/RUN/raw_traces/eff-r1-100.json"
+}

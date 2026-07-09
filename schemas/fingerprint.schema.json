@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/fingerprint.schema.json",
+  "title": "ScenarioFingerprint",
+  "description": "Structural signature of a scenario used by the non-repetition engine. Stored append-only in workspace/<campaign>/memory/scenario_fingerprints.jsonl. Two scenarios collide when their similarity (see rubrics/statistics.md) exceeds run-config.scenario_plan.max_repeat_similarity.",
+  "type": "object",
+  "required": ["scenario_id", "intent", "difficulty_tags", "path_shape"],
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": { "type": "string" },
+    "intent": { "type": "string", "description": "Normalized objective class, e.g. 'single-entity-lookup', 'cross-source-contradiction', 'unsupported-action-bait'." },
+    "difficulty_tags": {
+      "type": "array",
+      "description": "What makes it hard, e.g. ['ambiguous-subject','known-outage','stale-vs-live'].",
+      "items": { "type": "string" }
+    },
+    "source_mix": {
+      "type": "array",
+      "description": "Which target data sources/tools the scenario is designed to exercise.",
+      "items": { "type": "string" }
+    },
+    "ambiguity_shape": { "type": "string", "description": "The kind of ambiguity, if any, e.g. 'name-to-entity', 'missing-time-window', 'no-antecedent'." },
+    "path_shape": {
+      "type": "array",
+      "description": "Expected ideal path as an ordered list of step kinds, e.g. ['resolve-subject','gather','synthesize','caveat']. The primary structural axis for dedup.",
+      "items": { "type": "string" }
+    },
+    "normalized_text": { "type": "string", "description": "Lowercased, entity-masked prompt used for exact-duplicate detection." },
+    "mode": {
+      "type": "string",
+      "enum": ["efficiency", "tool-coverage", "agent-logic", "stall-conditions", "security", "behavioral-hardening", "prompt-injection", "instruction-following"]
+    },
+    "coverage_cell": { "type": "string", "description": "The coverage-matrix cell key this scenario fills: '<mode>|<intent>|<difficulty-bucket>'." },
+    "created_round": { "type": "integer", "minimum": 0 }
+  }
+}

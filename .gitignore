@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+*.local.*
+
+# Real campaign outputs are generated, not committed. The template and the worked example
+# (regenerable via `node runner/whetstone.workflow.js`) are kept as reference.
+workspace/*/
+!workspace/_TEMPLATE/
+!workspace/example-campaign/

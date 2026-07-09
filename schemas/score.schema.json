@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/score.schema.json",
+  "title": "RunScore",
+  "description": "Multi-axis score for one (scenario, trace) pair. Produced by each Trace Judge (roles/04-trace-judge.md). With a judge panel >1, one RunScore per judge is written and the harness reconciles them (rubrics/statistics.md).",
+  "type": "object",
+  "required": ["scenario_id", "judge_id", "fidelity", "axes", "overall", "top_problems"],
+  "additionalProperties": false,
+  "properties": {
+    "scenario_id": { "type": "string" },
+    "judge_id": { "type": "string", "description": "Identifier for this judge instance (enables inter-rater agreement)." },
+    "fidelity": { "type": "string", "enum": ["L0", "L1", "L2", "L3"] },
+    "axes": {
+      "type": "array",
+      "description": "Per-axis scores, 0-5. See rubrics/axes.md for anchored descriptors.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["axis", "value", "confidence"],
+        "additionalProperties": false,
+        "properties": {
+          "axis": {
+            "type": "string",
+            "enum": ["correctness", "consistency", "robustness", "safety", "efficiency", "tool-economy", "stall-resistance", "clarity", "fallback-quality", "confidence-discipline", "source-precedence", "auditability"]
+          },
+          "value": { "type": "number", "minimum": 0, "maximum": 5 },
+          "justification": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1, "description": "Judge's confidence in this axis score." }
+        }
+      }
+    },
+    "failure_counts": {
+      "type": "object",
+      "description": "Layer-2 measurement: objective failure tallies derived from the trace annotations.",
+      "additionalProperties": false,
+      "properties": {
+        "unnecessary_calls": { "type": "integer", "minimum": 0 },
+        "duplicate_calls": { "type": "integer", "minimum": 0 },
+        "retry_loops": { "type": "integer", "minimum": 0 },
+        "stale_source_misuse": { "type": "integer", "minimum": 0 },
+        "unsupported_inferences": { "type": "integer", "minimum": 0 },
+        "schema_discovery": { "type": "integer", "minimum": 0 },
+        "escalation_misses": { "type": "integer", "minimum": 0 },
+        "overbroad_refusals": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "calibration": {
+      "type": "object",
+      "description": "Did the target's stated confidence match its correctness? Feeds the portfolio Brier score.",
+      "additionalProperties": false,
+      "properties": {
+        "stated_confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "was_correct": { "type": "boolean" }
+      }
+    },
+    "overall": { "type": "number", "minimum": 0, "maximum": 5, "description": "Weighted overall (rubrics/weighting.md)." },
+    "sub_scores": {
+      "type": "object",
+      "description": "Orthogonal risk lenses.",
+      "additionalProperties": false,
+      "properties": {
+        "operational_risk": { "type": "number", "minimum": 0, "maximum": 5 },
+        "waste": { "type": "number", "minimum": 0, "maximum": 5 },
+        "security_exposure": { "type": "number", "minimum": 0, "maximum": 5 }
+      }
+    },
+    "pass": { "type": "boolean", "description": "Overall meets the campaign threshold." },
+    "top_problems": { "type": "array", "maxItems": 3, "items": { "type": "string" } }
+  }
+}

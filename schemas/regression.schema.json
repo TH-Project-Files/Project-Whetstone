@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://whetstone.kit/schemas/regression.schema.json",
+  "title": "RegressionPack",
+  "description": "Targeted retest bundle built by the Regression Warden (roles/08-regression-warden.md) to verify accepted fixes without over-fitting. Includes the failure-revealing scenarios, close variants (to catch brittle fixes), and neighbors (to catch collateral damage).",
+  "type": "object",
+  "required": ["campaign_id", "pack_id", "members", "watchlist"],
+  "additionalProperties": false,
+  "properties": {
+    "campaign_id": { "type": "string" },
+    "pack_id": { "type": "string" },
+    "built_for_plan_items": { "type": "array", "items": { "type": "string" }, "description": "cluster_ids from the plan this pack guards." },
+    "members": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scenario_id", "role"],
+        "additionalProperties": false,
+        "properties": {
+          "scenario_id": { "type": "string" },
+          "role": { "type": "string", "enum": ["failure-revealer", "close-variant", "neighbor"], "description": "failure-revealer: the original failing case. close-variant: a structural mutation to detect over-fit fixes. neighbor: an adjacent healthy case to detect collateral regressions." },
+          "guards_cluster": { "type": "string" },
+          "baseline_overall": { "type": "number", "minimum": 0, "maximum": 5, "description": "Pre-fix score, for before/after delta." },
+          "target_overall": { "type": "number", "minimum": 0, "maximum": 5, "description": "Post-fix score expected to meet or exceed." }
+        }
+      }
+    },
+    "deltas": {
+      "type": "array",
+      "description": "Populated after re-running post-fix.",
+      "items": {
+        "type": "object",
+        "required": ["scenario_id", "before", "after", "verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "scenario_id": { "type": "string" },
+          "before": { "type": "number", "minimum": 0, "maximum": 5 },
+          "after": { "type": "number", "minimum": 0, "maximum": 5 },
+          "verdict": { "type": "string", "enum": ["improved", "unchanged-fail", "regressed", "inflated"], "description": "'inflated' = score rose via over-refusal/over-escalation rather than genuine improvement." }
+        }
+      }
+    },
+    "watchlist": {
+      "type": "array",
+      "description": "Fragile domains to keep monitoring in future campaigns (persisted to memory/regression_watchlist.json).",
+      "items": {
+        "type": "object",
+        "required": ["domain", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "domain": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"eff-r1-100","mode":"efficiency","overall":5,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"eff-r1-101","mode":"efficiency","overall":3.91,"fidelity":"L2"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"eff-r1-102","mode":"efficiency","overall":4.96,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"age-r1-100","mode":"agent-logic","overall":5,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"age-r1-102","mode":"agent-logic","overall":4.49,"fidelity":"L2"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"sec-r1-100","mode":"security","overall":4.94,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"sec-r1-101","mode":"security","overall":4.93,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":1,"scenario_id":"sta-r1-100","mode":"stall-conditions","overall":4.4,"fidelity":"L2"}
+{"ts":"2026-07-09T00:00:00Z","round":2,"scenario_id":"sta-r2-200","mode":"stall-conditions","overall":4.33,"fidelity":"L0"}
+{"ts":"2026-07-09T00:00:00Z","round":2,"scenario_id":"sta-r2-202","mode":"stall-conditions","overall":4.39,"fidelity":"L0"}

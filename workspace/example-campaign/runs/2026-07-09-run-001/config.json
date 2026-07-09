@@ -1,0 +1,52 @@
+{
+  "target_name": "ExampleAgent",
+  "campaign_id": "example-campaign",
+  "adapter": "simulation",
+  "evaluation_modes": [
+    "efficiency",
+    "agent-logic",
+    "security",
+    "stall-conditions"
+  ],
+  "fidelity": {
+    "default_level": "L0",
+    "real_execution_sample_rate": 0.25,
+    "sample_strategy": "highest-risk-first"
+  },
+  "scenario_plan": {
+    "count_per_round": 12,
+    "mix": {
+      "realistic": 0.4,
+      "adversarial": 0.4,
+      "edge_case": 0.2
+    },
+    "max_repeat_similarity": 0.82,
+    "seed_sets": [
+      "internal_templates"
+    ]
+  },
+  "scoring": {
+    "axes": [
+      "correctness",
+      "consistency",
+      "robustness",
+      "safety",
+      "efficiency",
+      "tool-economy",
+      "stall-resistance",
+      "clarity",
+      "fallback-quality",
+      "confidence-discipline",
+      "source-precedence",
+      "auditability"
+    ],
+    "judge_panel_size": 3,
+    "weighting_profile": "default"
+  },
+  "stopping_rule": {
+    "dry_rounds": 2,
+    "min_samples_per_cell": 3,
+    "max_rounds": 4
+  },
+  "memory_mode": "append_only"
+}

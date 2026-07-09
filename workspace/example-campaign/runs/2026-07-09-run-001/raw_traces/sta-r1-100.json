@@ -1,0 +1,91 @@
+{
+  "scenario_id": "sta-r1-100",
+  "fidelity": "L2",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "iterate"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "terminate"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 3,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 4,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 5,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 6,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 7,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for sta-r1-100",
+  "divergence": {
+    "summary": "retry-loop, stall",
+    "extra_steps": 4,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [
+    "retry-loop",
+    "stall"
+  ],
+  "cost": {
+    "tool_calls": 7,
+    "turns": 8,
+    "est_tokens": 3300,
+    "wall_ms": 1340,
+    "estimated": false
+  },
+  "evidence_ref": "runs/RUN/raw_traces/sta-r1-100.json"
+}

@@ -1,0 +1,62 @@
+{
+  "campaign_id": "example-campaign",
+  "target_name": "ExampleAgent",
+  "generated_at": "2026-07-09T00:00:00Z",
+  "evidence_confidence": "high-confidence",
+  "items": [
+    {
+      "cluster_id": "C-insufficient-stop-condition",
+      "priority": 1,
+      "problem": "Recurring insufficient-stop-condition across 7 findings",
+      "fix_locus": "stop-conditions",
+      "change": "Promote C-insufficient-stop-condition to L2 and re-measure before changing code",
+      "rationale": "Addresses insufficient-stop-condition root cause",
+      "expected_score_gain": "target the emphasized axes for the affected modes",
+      "possible_regressions": [
+        "over-correction"
+      ],
+      "regression_test_ids": [
+        "eff-r1-101",
+        "sta-r1-100"
+      ],
+      "skeptic_verdict": "needs-more-evidence",
+      "skeptic_note": "L0-only or unconfirmed; promote to L2 first"
+    },
+    {
+      "cluster_id": "C-cost-explosion",
+      "priority": 2,
+      "problem": "Recurring cost-explosion across 2 findings",
+      "fix_locus": "stop-conditions",
+      "change": "Apply smallest fix at stop-conditions for cost-explosion",
+      "rationale": "Addresses cost-explosion root cause",
+      "expected_score_gain": "target the emphasized axes for the affected modes",
+      "possible_regressions": [
+        "over-correction"
+      ],
+      "regression_test_ids": [
+        "eff-r1-101",
+        "eff-r1-101"
+      ],
+      "skeptic_verdict": "accepted",
+      "skeptic_note": "confirmed, adequately sampled"
+    },
+    {
+      "cluster_id": "C-unsupported-synthesis",
+      "priority": 3,
+      "problem": "Recurring unsupported-synthesis across 1 findings",
+      "fix_locus": "prompt-policy",
+      "change": "Apply smallest fix at prompt-policy for unsupported-synthesis",
+      "rationale": "Addresses unsupported-synthesis root cause",
+      "expected_score_gain": "target the emphasized axes for the affected modes",
+      "possible_regressions": [
+        "over-correction"
+      ],
+      "regression_test_ids": [
+        "age-r1-102"
+      ],
+      "skeptic_verdict": "narrowed",
+      "skeptic_note": "insufficient regression coverage; add variants"
+    }
+  ],
+  "deferred": []
+}
