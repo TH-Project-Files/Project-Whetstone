@@ -7,3 +7,6 @@ node_modules/
 workspace/*/
 !workspace/_TEMPLATE/
 !workspace/example-campaign/
+
+# Side-review / campaign scratch — never commit to the public kit
+KIT_SOURCE.md
