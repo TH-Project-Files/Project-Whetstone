@@ -53,22 +53,6 @@ flattering itself. (`playbooks/STONE_POLISHING.md`)
 
 ---
 
-## 5-minute quickstart
-
-1. **Write an adapter** for your target (`adapters/ADAPTER_CONTRACT.md`). Minimum: `describe()`.
-   Add `execute()` for real-run (L2) fidelity, `simulate()` for mechanism (L1) checks.
-2. **Copy the workspace template**: `workspace/_TEMPLATE/` → `workspace/<campaign_id>/`.
-3. **Write a run-config** (`schemas/run-config.schema.json`): pick 1–3 modes, set the fidelity
-   sample rate, judges, and stopping rule. A good first trio: `efficiency`, `agent-logic`,
-   `security`.
-4. **Run it** — either drive the role prompts by hand per `playbooks/RUN_A_CAMPAIGN.md`, or launch
-   `runner/whetstone.workflow.js` (see `runner/README.md`).
-5. **Read the output** under `workspace/<campaign_id>/runs/<run_id>/`: the coverage matrix, ranked
-   clusters, the Skeptic-gated plan, and the regression pack. Confidence is labeled honestly —
-   *directional*, *high-confidence*, or (rarely) *significant*.
-
----
-
 ## Getting Started — the Whetstone Master Audit Prompt
 
 Don't want to wire anything up by hand? Paste the prompt below into any capable agent (Claude
