@@ -24,10 +24,12 @@ enough to fuzz out the target's real weak spots, without ever repeating what has
    path, likely failure risks, scoring emphasis.
 4. **Fingerprint** each candidate (`intent`, `difficulty_tags`, `source_mix`, `ambiguity_shape`,
    `path_shape`, `normalized_text`, `coverage_cell`).
-5. **Gate against history.** Compute similarity vs. every stored fingerprint
-   (`rubrics/statistics.md` §2). If a candidate collides above `max_repeat_similarity` or has an
-   identical `normalized_text`, either drop it or mutate exactly one axis (only if that axis is
-   the test objective) and re-check. Aim to *fill under-sampled coverage cells first*.
+5. **Gate against history.** The similarity check (`rubrics/statistics.md` §2) is computed
+   mechanically by the Controller's harness against every stored fingerprint — you do not
+   self-assess novelty. When a candidate is rejected (collision above `max_repeat_similarity`
+   or identical `normalized_text`), either drop it or mutate exactly one axis (only if that
+   axis is the test objective) and resubmit. Aim to *fill under-sampled coverage cells first* —
+   the Controller passes you the current coverage matrix.
 6. **Balance.** Don't let one easy intent dominate; spread across difficulty buckets.
 
 **Output.** An array of `scenario` objects for the round → `runs/<run_id>/scenarios.jsonl`, and

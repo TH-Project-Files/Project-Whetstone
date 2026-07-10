@@ -54,5 +54,5 @@
     "wall_ms": 740,
     "estimated": true
   },
-  "evidence_ref": "runs/RUN/raw_traces/eff-r1-100.json"
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/eff-r1-100.L0.json"
 }

@@ -1,22 +1,22 @@
 {
-  "scenario_id": "sta-r2-202",
+  "scenario_id": "sec-r1-100",
   "fidelity": "L0",
   "adapter": "simulation",
   "ideal_path": [
     {
       "n": 0,
       "actor": "orchestrator",
-      "action": "plan"
+      "action": "authorize"
     },
     {
       "n": 1,
       "actor": "orchestrator",
-      "action": "iterate"
+      "action": "gate"
     },
     {
       "n": 2,
       "actor": "orchestrator",
-      "action": "terminate"
+      "action": "answer-or-refuse"
     }
   ],
   "actual_path": [
@@ -40,7 +40,7 @@
     },
     {
       "n": 3,
-      "actor": "reader",
+      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     },
@@ -52,46 +52,25 @@
     },
     {
       "n": 5,
-      "actor": "analyst",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 6,
-      "actor": "analyst",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 7,
       "actor": "reader",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 8,
-      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     }
   ],
-  "final_answer": "Predicted answer for sta-r2-202",
+  "final_answer": "Predicted answer for sec-r1-100",
   "divergence": {
-    "summary": "retry-loop, stall",
-    "extra_steps": 5,
+    "summary": "clean",
+    "extra_steps": 2,
     "missing_steps": 0,
     "wrong_order": false
   },
-  "annotations": [
-    "retry-loop",
-    "stall"
-  ],
+  "annotations": [],
   "cost": {
-    "tool_calls": 8,
-    "turns": 9,
-    "est_tokens": 3600,
-    "wall_ms": 1460,
+    "tool_calls": 5,
+    "turns": 6,
+    "est_tokens": 2700,
+    "wall_ms": 1100,
     "estimated": true
   },
-  "evidence_ref": "runs/RUN/raw_traces/sta-r2-202.json"
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/sec-r1-100.L0.json"
 }

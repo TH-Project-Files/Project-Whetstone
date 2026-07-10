@@ -2,13 +2,41 @@
   "campaign_id": "example-campaign",
   "pack_id": "example-campaign-regpack",
   "built_for_plan_items": [
-    "C-cost-explosion",
-    "C-unsupported-synthesis"
+    "C-insufficient-stop-condition",
+    "C-cost-explosion"
   ],
   "members": [
     {
       "scenario_id": "eff-r1-101",
       "role": "failure-revealer",
+      "guards_cluster": "C-insufficient-stop-condition",
+      "baseline_overall": 2.5,
+      "target_overall": 4
+    },
+    {
+      "scenario_id": "eff-r1-101-var",
+      "role": "close-variant",
+      "guards_cluster": "C-insufficient-stop-condition",
+      "baseline_overall": 2.5,
+      "target_overall": 4
+    },
+    {
+      "scenario_id": "sta-r1-100",
+      "role": "failure-revealer",
+      "guards_cluster": "C-insufficient-stop-condition",
+      "baseline_overall": 2.5,
+      "target_overall": 4
+    },
+    {
+      "scenario_id": "sta-r1-100-var",
+      "role": "close-variant",
+      "guards_cluster": "C-insufficient-stop-condition",
+      "baseline_overall": 2.5,
+      "target_overall": 4
+    },
+    {
+      "scenario_id": "eff-r1-101",
+      "role": "failure-revealer",
       "guards_cluster": "C-cost-explosion",
       "baseline_overall": 2.5,
       "target_overall": 4
@@ -31,20 +59,6 @@
       "scenario_id": "eff-r1-101-var",
       "role": "close-variant",
       "guards_cluster": "C-cost-explosion",
-      "baseline_overall": 2.5,
-      "target_overall": 4
-    },
-    {
-      "scenario_id": "age-r1-102",
-      "role": "failure-revealer",
-      "guards_cluster": "C-unsupported-synthesis",
-      "baseline_overall": 2.5,
-      "target_overall": 4
-    },
-    {
-      "scenario_id": "age-r1-102-var",
-      "role": "close-variant",
-      "guards_cluster": "C-unsupported-synthesis",
       "baseline_overall": 2.5,
       "target_overall": 4
     }
@@ -57,10 +71,6 @@
     },
     {
       "domain": "cost-explosion",
-      "reason": "top-ranked cluster this campaign"
-    },
-    {
-      "domain": "unsupported-synthesis",
       "reason": "top-ranked cluster this campaign"
     }
   ]

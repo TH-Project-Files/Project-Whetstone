@@ -40,6 +40,11 @@ by fidelity, and predictions are never reported as facts.
 6. **A prediction that execution contradicts is refuted.** Set `verify_status: REFUTED`, keep
    the record (it documents a static-analysis blind spot worth remembering), and drop it from
    the plan.
+7. **A prediction can never be CONFIRMED.** `CONFIRMED` requires evidence a verifier can
+   independently check, and an L0 trace's "evidence" is itself predicted — internal consistency
+   is not reproduction. Verify over L0 caps at UNCERTAIN (with a note on what execution would
+   settle it); the orchestrating harness enforces the cap mechanically rather than trusting the
+   verifier's restraint.
 
 ## Fidelity vs. verify_status
 
@@ -47,9 +52,9 @@ They are independent axes and both matter:
 
 - **fidelity** = *how directly* it was observed (prediction → executed → live).
 - **verify_status** = *did an independent adversarial check reproduce it* (CONFIRMED / UNCERTAIN
-  / REFUTED), regardless of level.
+  / REFUTED). The axes are independent except at one corner: CONFIRMED requires L1+ (rule 7).
 
 A finding can be L2 + UNCERTAIN (executed once, not yet reproduced) or L1 + CONFIRMED (a guard
-function repeatably rejects the input). The Plan's `evidence_confidence` field summarizes the
+function repeatably rejects the input) — but never L0 + CONFIRMED. The Plan's `evidence_confidence` field summarizes the
 portfolio: report **significant** only when the highest-value clusters are L2+/CONFIRMED and the
 sampling met the stopping rule.

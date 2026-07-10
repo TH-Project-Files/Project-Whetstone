@@ -57,7 +57,10 @@ Three layers because a single 0–5 is too lossy to prioritize real work.
 Scores are only as trustworthy as the judges. Use a **panel of independent judges**, reconcile by
 **median**, and report **inter-rater agreement** (percent-within-1, or Krippendorff's α). Low
 agreement means the axis descriptors need tightening or the scenario is genuinely ambiguous —
-never average over disagreement. Prevalence, once a cell meets its sample floor, is reported as an
+never average over disagreement. The panel is also **split**: blind judges score without the
+Smith's hypothesis (`expected_ideal_path`, `likely_failure_risks`) or the trace's derivations
+from it (`ideal_path`, `divergence`), and the **blind-vs-sighted delta** is reported each round —
+the diagnostic for hypothesis anchoring. Prevalence, once a cell meets its sample floor, is reported as an
 empirical rate with a **Wilson confidence interval**, and clusters are prioritized by the interval's
 **lower bound**. `rubrics/statistics.md` §3–4.
 
@@ -65,7 +68,9 @@ empirical rate with a **Wilson confidence interval**, and clusters are prioritiz
 Stop when, for `dry_rounds` consecutive rounds, **no new cluster** appears **and** every
 top-cluster coverage cell has met its **sample floor**. "Loop-until-dry" without a floor misses
 the tail; a floor without dry-rounds stops on a shallow pass. Both conditions, or you stop on
-budget and label the campaign *incompletely converged*. `rubrics/statistics.md` §5.
+budget and label the campaign *incompletely converged* — and a round that accepts **zero**
+scenarios ends the loop immediately (the generator is dry; empty rounds teach nothing).
+`rubrics/statistics.md` §5.
 
 ### 7. Ranking and minimal remediation
 Clusters rank by `severity × prevalence × improvement_leverage`, discounted by fidelity and
@@ -78,9 +83,12 @@ over-correction, and evidence sufficiency before it counts.
 The closed loop only improves the target if it can't flatter itself. Role separation is
 structural: the agent that generates a scenario never scores it; the Judge never grades its own
 verification; the Planner never gates its own plan; verification is adversarial (refute, don't
-confirm). Score inflation via over-refusal is treated as a **regression**, not a win. This is what
-turns "stone polishing" from a self-licking exercise into a disciplined engine.
-`playbooks/STONE_POLISHING.md`.
+confirm). And the two gates a model cannot be trusted to hold against itself are **enforced
+mechanically, not prompted**: scenario novelty (the similarity gate runs as code against the
+full fingerprint history) and prediction confirmation (a finding born at L0 is clamped to
+UNCERTAIN until execution reproduces it). Score inflation via over-refusal is treated as a
+**regression**, not a win. This is what turns "stone polishing" from a self-licking exercise
+into a disciplined engine. `playbooks/STONE_POLISHING.md`.
 
 ---
 
@@ -108,17 +116,18 @@ needs to decide what to fix next — and far more than an unstructured "polish p
 ```
 run-config ─▶ Cartographer ─▶ target-profile
                                    │
-        ┌──────────────────────────┴───────────────── round loop ─────────────────────────────┐
-        │  Scenario Smith ─▶ scenarios (+ fingerprints, deduped)                                │
-        │        │                                                                              │
-        │  Run Simulator ─▶ traces (L0 all; L2/L3 sampled via adapter.execute)                  │
-        │        │                                                                              │
-        │  Trace Judge ×N ─▶ scores + findings   ──▶ Judge (verify/refute) ──▶ verify_status    │
-        │        │                                                                              │
-        │  Root-Cause Analyst ─▶ ranked clusters   (append-only findings; rewritten clusters)   │
-        └───────────────────────────────── until convergence ─────────────────────────────────┘
+   round loop (until dry_rounds with no new cluster AND sample floors met; ends early if the
+   generator runs dry):
+     Scenario Smith ─▶ candidates ─▶ fingerprint gate (computed, not judged) ─▶ scenarios
+     Run Simulator ─▶ traces at the default fidelity (predictions labeled as predictions)
+     Trace Judge ×N, panel split blind/sighted ─▶ scores + findings
+       └▶ Judge in verify mode (refute; a finding born at L0 caps at UNCERTAIN)
+     Promote highest-risk sample ─▶ adapter.execute() at L2 ─▶ re-judge ─▶ upgrade / refute
+     Root-Cause Analyst ─▶ ranked clusters (append-only findings; clusters rewritten)
                                    │
    Remediation Planner ─▶ plan ─▶ Skeptic (gate) ─▶ Regression Warden ─▶ regression pack
+                                      │
+                                      └ needs-more-evidence ─▶ targeted L2 pass ─▶ re-cluster ─▶ re-gate
 ```
 
 The data contracts for every arrow live in `schemas/`; the prompts for every box live in

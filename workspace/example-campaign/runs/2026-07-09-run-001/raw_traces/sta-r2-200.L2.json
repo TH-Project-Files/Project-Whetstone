@@ -1,0 +1,85 @@
+{
+  "scenario_id": "sta-r2-200",
+  "fidelity": "L2",
+  "adapter": "simulation",
+  "ideal_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "orchestrator",
+      "action": "iterate"
+    },
+    {
+      "n": 2,
+      "actor": "orchestrator",
+      "action": "terminate"
+    }
+  ],
+  "actual_path": [
+    {
+      "n": 0,
+      "actor": "orchestrator",
+      "action": "route",
+      "output_shape": "plan"
+    },
+    {
+      "n": 1,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 2,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 3,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 4,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 5,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 6,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    }
+  ],
+  "final_answer": "Predicted answer for sta-r2-200",
+  "divergence": {
+    "summary": "retry-loop, stall",
+    "extra_steps": 3,
+    "missing_steps": 0,
+    "wrong_order": false
+  },
+  "annotations": [
+    "retry-loop",
+    "stall"
+  ],
+  "cost": {
+    "tool_calls": 6,
+    "turns": 7,
+    "est_tokens": 3000,
+    "wall_ms": 1220,
+    "estimated": false
+  },
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/sta-r2-200.L2.json"
+}

@@ -31,20 +31,30 @@ Repeat until the stopping rule fires:
 
 1. **Generate** — **Scenario Smith** (`roles/02`) produces the round's scenarios, deduped against
    the full fingerprint history. Blend in curated `seed-imports/` if you have them.
-2. **Run** — **Run Simulator** (`roles/03`) builds a trace per scenario. All at the default level;
-   a sampled subset promoted to L2/L3 via the adapter's `execute()` (highest-risk-first).
-3. **Score** — N independent **Trace Judges** (`roles/04`) per run; reconcile by median; record
-   inter-rater agreement.
+2. **Run** — **Run Simulator** (`roles/03`) builds a trace per scenario, **all at the default
+   level**. Promotion to real execution happens *after* scoring (step 5) so risk-ranking has
+   evidence to rank on.
+3. **Score** — N independent **Trace Judges** (`roles/04`) per run, the panel **split** per
+   `scoring.blind_fraction`: blind judges never see the Smith's `expected_ideal_path` /
+   `likely_failure_risks` or the trace's `ideal_path` / `divergence`. Reconcile by median;
+   record inter-rater agreement and the blind-vs-sighted delta.
 4. **Verify** — a separate Judge instance tries to *refute* each candidate finding →
-   `verify_status`. Default to skeptical.
-5. **Cluster** — **Root-Cause Analyst** (`roles/05`) folds findings into ranked clusters.
-6. **Append & report** — write findings/fingerprints/scores (append-only), rewrite
-   `issue_clusters.json`, log the coverage matrix. Check: any coverage cell still under the
-   sample floor that a top cluster depends on? If so, next round targets those cells.
+   `verify_status`. Default to skeptical — and clamp mechanically: a finding born at L0 is never
+   CONFIRMED, whatever the verifier writes.
+5. **Promote** — promote the round's highest-risk sample (max finding severity, then worst
+   consensus) to L2/L3 via the adapter's `execute()` at the configured rate. Re-judge the
+   executed trace, then reconcile: a prediction the run re-observes is **upgraded** (same
+   finding, higher fidelity — not a duplicate); one it contradicts is kept as **REFUTED**.
+6. **Cluster** — **Root-Cause Analyst** (`roles/05`) folds findings into ranked clusters.
+7. **Append & report** — write the *settled* findings/fingerprints/scores (append-only; a finding
+   revised later is appended again with the same `id` — the last record per id is current),
+   rewrite `issue_clusters.json`, update and log the coverage matrix. Check: any coverage cell
+   still under the sample floor that a top cluster depends on? If so, next round targets those cells.
 
 **Convergence check** (`rubrics/statistics.md` §5): stop when, for `dry_rounds` consecutive
-rounds, no new cluster appeared **and** every top-cluster cell met the sample floor. Otherwise
-stop on `max_rounds`/budget and mark the campaign *incompletely converged*.
+rounds, no new cluster appeared **and** every top-cluster cell met the sample floor. A round that
+accepts **zero** scenarios stops the loop immediately — the generator is dry; report it as such.
+Otherwise stop on `max_rounds`/budget and mark the campaign *incompletely converged*.
 
 ## 4. Plan
 Run the **Remediation Planner** (`roles/06`) over the ranked clusters → a draft `plan` of smallest
@@ -52,9 +62,12 @@ effective fixes, each with a locus, a concrete change, and named regression scen
 
 ## 5. Skeptic gate
 Run the **Skeptic** (`roles/07`) over the draft plan. Each item comes back
-`accepted` / `narrowed` / `rejected` / `needs-more-evidence`. Items marked *needs-more-evidence*
-usually mean "promote to L2 and re-measure" — feed them back into a targeted mini-round rather
-than shipping a fix on an untested prediction.
+`accepted` / `narrowed` / `rejected` / `needs-more-evidence`. *needs-more-evidence* is a
+dispatch, not a shrug: while budget remains (and `execute()` is available), run **one targeted
+evidence pass** — execute the gated clusters' representative scenarios at L2, reconcile,
+re-cluster, re-plan, re-gate — rather than shipping a fix on an untested prediction. In a
+simulation-only campaign, record instead exactly which scenarios a future live campaign must
+execute first.
 
 ## 6. Regression pack
 Run the **Regression Warden** (`roles/08`) to build the pack guarding accepted fixes

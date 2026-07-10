@@ -38,6 +38,11 @@ clears the gate — mutation is allowed only when the changed axis is itself the
 fingerprint is appended to `memory/scenario_fingerprints.jsonl`; the gate checks against the
 full history, so campaigns never repeat across rounds either.
 
+The gate is **computed, never judged**: the orchestrating harness runs it as code (the
+reference implementation is `fingerprintSimilarity` in `runner/whetstone.workflow.js`,
+including the trigram-cosine text term). An LLM asked "is this too similar?" drifts toward
+whatever keeps its batch alive; a script does not.
+
 ## 3. Judge panels and inter-rater agreement
 
 With `judge_panel_size > 1`, each run gets N independent RunScores. Trust the aggregate only
@@ -55,6 +60,16 @@ when the judges agree:
 Judges must be **independent**: they receive the scenario, trace, and answer, but not each
 other's scores and not the Scenario Smith's private "expected answer" beyond the scenario's
 public `expected_ideal_path`.
+
+Independence alone doesn't remove **hypothesis anchoring** — the Smith's `expected_ideal_path`
+flows into the trace (as `ideal_path` and `divergence`), so every sighted judge scores against
+the Smith's guess. The control is a **split panel** (`scoring.blind_fraction`, default 0.5; any
+panel ≥ 2 has at least one blind judge): blind judges are stripped of `expected_ideal_path`,
+`likely_failure_risks`, `ideal_path`, and `divergence`, and score the observed behavior against
+the anchors alone. Report the **blind-vs-sighted delta** (sighted median − blind median) per
+round. A delta persistently far from 0 means the hypothesis is steering the sighted judges —
+tighten the Smith's neutrality or trust the blind scores. A panel of 1 judges sighted (there is
+no delta to read, which is one more reason to fund a panel).
 
 ## 4. Prevalence and effect size
 
@@ -96,4 +111,7 @@ Set `plan.evidence_confidence` truthfully:
 
 > Do not write "statistically significant" unless you actually ran repeated trials and can quote
 > the variance. Breadth of coverage earns "high-confidence," not "significant." Overclaiming here
-> is itself a failure the Skeptic (`roles/07-skeptic.md`) is instructed to catch.
+> is itself a failure the Skeptic (`roles/07-skeptic.md`) is instructed to catch — and the
+> orchestrating harness enforces the floor mechanically: a campaign whose stopping rule did not
+> fire, or whose judge agreement is below 0.8, is capped at **directional** no matter what the
+> plan says.

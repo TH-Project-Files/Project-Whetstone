@@ -6,9 +6,5 @@
   {
     "domain": "cost-explosion",
     "reason": "top-ranked cluster this campaign"
-  },
-  {
-    "domain": "unsupported-synthesis",
-    "reason": "top-ranked cluster this campaign"
   }
 ]

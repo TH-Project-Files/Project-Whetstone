@@ -1,5 +1,5 @@
 {
-  "scenario_id": "age-r1-100",
+  "scenario_id": "age-r1-102",
   "fidelity": "L0",
   "adapter": "simulation",
   "ideal_path": [
@@ -33,31 +33,55 @@
     },
     {
       "n": 1,
-      "actor": "reader",
+      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     },
     {
       "n": 2,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 3,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 4,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 5,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 6,
       "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     }
   ],
-  "final_answer": "Predicted answer for age-r1-100",
+  "final_answer": "Predicted answer for age-r1-102",
   "divergence": {
     "summary": "clean",
-    "extra_steps": 0,
+    "extra_steps": 2,
     "missing_steps": 0,
     "wrong_order": false
   },
   "annotations": [],
   "cost": {
-    "tool_calls": 2,
-    "turns": 3,
-    "est_tokens": 1800,
-    "wall_ms": 740,
+    "tool_calls": 6,
+    "turns": 7,
+    "est_tokens": 3000,
+    "wall_ms": 1220,
     "estimated": true
   },
-  "evidence_ref": "runs/RUN/raw_traces/age-r1-100.json"
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/age-r1-102.L0.json"
 }

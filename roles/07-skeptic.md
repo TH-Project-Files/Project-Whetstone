@@ -33,6 +33,12 @@ reject, or send an item back for more evidence.
 **Output.** The `plan` with every item's `skeptic_verdict` and `skeptic_note` set. Return
 message: counts by verdict and the reasons for any rejection/narrowing.
 
+**`needs-more-evidence` is a dispatch, not a shrug.** While the campaign has budget, the
+Controller answers it with a targeted L2 pass on the cluster's representative scenarios and
+re-gates the plan. Your note should therefore name exactly what evidence would change your
+verdict — "execute sec-r1-001 for real and see whether the write actually happens" beats
+"needs more evidence."
+
 **Invariants.**
 - **You did not write the plan and you do not rewrite it.** You judge and gate; the Planner
   revises. This separation is the whole point.

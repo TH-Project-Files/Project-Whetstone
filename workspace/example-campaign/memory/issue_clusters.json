@@ -22,15 +22,15 @@
     ],
     "aggregate": {
       "severity": 3,
-      "prevalence": 0.7,
+      "prevalence": 0.78,
       "improvement_leverage": 0.6,
       "regression_risk": 2,
       "min_fidelity": "L0",
-      "confirmed_members": 3
+      "confirmed_members": 5
     },
     "likely_root_cause": "Recurring insufficient-stop-condition across 7 findings",
     "fix_locus": "stop-conditions",
-    "rank_score": 0.657,
+    "rank_score": 0.73,
     "stability": {
       "first_seen_round": 1,
       "rounds_observed": 3
@@ -53,7 +53,7 @@
     ],
     "aggregate": {
       "severity": 2,
-      "prevalence": 0.2,
+      "prevalence": 0.22,
       "improvement_leverage": 0.6,
       "regression_risk": 2,
       "min_fidelity": "L2",
@@ -61,36 +61,7 @@
     },
     "likely_root_cause": "Recurring cost-explosion across 2 findings",
     "fix_locus": "stop-conditions",
-    "rank_score": 0.209,
-    "stability": {
-      "first_seen_round": 1,
-      "rounds_observed": 3
-    }
-  },
-  {
-    "cluster_id": "C-unsupported-synthesis",
-    "title": "Cluster: unsupported-synthesis",
-    "issue_class": "unsupported-synthesis",
-    "affected_modes": [
-      "agent-logic"
-    ],
-    "member_findings": [
-      "age-r1-102-f0"
-    ],
-    "representative_examples": [
-      "age-r1-102"
-    ],
-    "aggregate": {
-      "severity": 2,
-      "prevalence": 0.1,
-      "improvement_leverage": 0.6,
-      "regression_risk": 2,
-      "min_fidelity": "L2",
-      "confirmed_members": 1
-    },
-    "likely_root_cause": "Recurring unsupported-synthesis across 1 findings",
-    "fix_locus": "prompt-policy",
-    "rank_score": 0.104,
+    "rank_score": 0.232,
     "stability": {
       "first_seen_round": 1,
       "rounds_observed": 3

@@ -72,7 +72,25 @@ function median(xs) {
 }
 function clamp(x, lo, hi) { return Math.max(lo, Math.min(hi, x)); }
 
-// Similarity gate, mirroring rubrics/statistics.md §2.
+// Text-similarity term for the gate: cosine over character-trigram counts of normalized_text.
+function trigramCounts(s) {
+  const x = (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const m = new Map();
+  for (let i = 0; i + 3 <= x.length; i++) { const g = x.slice(i, i + 3); m.set(g, (m.get(g) || 0) + 1); }
+  return m;
+}
+function normalizedTextTrigramCosine(a, b) {
+  const ca = trigramCounts(a), cb = trigramCounts(b);
+  if (ca.size === 0 || cb.size === 0) return ca.size === cb.size ? 1 : 0;
+  let dot = 0, na = 0, nb = 0;
+  for (const v of ca.values()) na += v * v;
+  for (const v of cb.values()) nb += v * v;
+  for (const [g, v] of ca) if (cb.has(g)) dot += v * cb.get(g);
+  return dot / Math.sqrt(na * nb);
+}
+
+// Similarity gate, implementing rubrics/statistics.md §2 exactly. This runs in the control flow
+// (not in any role) so non-repetition is mechanically enforced no matter which engine generates.
 function fingerprintSimilarity(a, b) {
   if (a.normalized_text && a.normalized_text === b.normalized_text) return 1;
   return (
@@ -80,8 +98,55 @@ function fingerprintSimilarity(a, b) {
     0.25 * (a.intent === b.intent ? 1 : 0) +
     0.20 * jaccard(a.difficulty_tags || [], b.difficulty_tags || []) +
     0.10 * jaccard(a.source_mix || [], b.source_mix || []) +
-    0.10 * (a.intent === b.intent && (a.ambiguity_shape || '') === (b.ambiguity_shape || '') ? 1 : 0)
+    0.10 * normalizedTextTrigramCosine(a.normalized_text, b.normalized_text)
   );
+}
+
+// Judge blinding (rubrics/statistics.md §3): a blind judge never sees the Smith's hypothesis
+// (expected_ideal_path, likely_failure_risks) or the Simulator's derivations from it
+// (ideal_path, divergence) — only the stimulus and what the target actually did.
+function redactForBlindJudge(scenario, trace) {
+  const s = { ...scenario }; delete s.expected_ideal_path; delete s.likely_failure_risks;
+  const t = { ...trace }; delete t.ideal_path; delete t.divergence;
+  return { scenario: s, trace: t };
+}
+
+// Per-axis percent-agreement-within-1 across a judge panel (rubrics/statistics.md §3).
+function agreementWithin1(panel) {
+  if (panel.length < 2) return 1;
+  const axes = panel[0].axes.map(a => a.axis);
+  let ok = 0;
+  for (const ax of axes) {
+    const vals = panel.map(p => (p.axes.find(x => x.axis === ax) || {}).value).filter(v => typeof v === 'number');
+    if (vals.length && Math.max(...vals) - Math.min(...vals) <= 1.0) ok++;
+  }
+  return ok / axes.length;
+}
+
+// L2-promotion selection (fidelity-ladder rule 4). Runs AFTER judging, so 'highest-risk-first'
+// can rank on what the round actually surfaced (max finding severity, then worst consensus).
+function pickPromotions(roundRuns, quota, strategy) {
+  const eligible = roundRuns.filter(r => r.trace.fidelity === 'L0' || r.trace.fidelity === 'L1');
+  if (quota <= 0 || !eligible.length) return [];
+  if (strategy === 'random') {
+    return [...eligible]
+      .sort((a, b) => hashStr(a.scenario.scenario_id + '|sample') - hashStr(b.scenario.scenario_id + '|sample'))
+      .slice(0, quota);
+  }
+  const risk = (r) => (r.findings.length ? Math.max(...r.findings.map(f => f.severity)) : 0) * 10 + (5 - r.consensus);
+  const ranked = [...eligible].sort((a, b) => risk(b) - risk(a));
+  if (strategy === 'stratified') {
+    const byMode = new Map();
+    for (const r of ranked) { const m = r.scenario.mode; if (!byMode.has(m)) byMode.set(m, []); byMode.get(m).push(r); }
+    const out = [];
+    let took = true;
+    while (out.length < quota && took) {
+      took = false;
+      for (const q of byMode.values()) if (q.length && out.length < quota) { out.push(q.shift()); took = true; }
+    }
+    return out;
+  }
+  return ranked.slice(0, quota); // highest-risk-first
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +384,9 @@ function offlineEngine() {
 
     plan(campaignId, targetName, clusters, now) {
       const items = clusters.slice(0, 8).map((c, i) => {
-        const underEvidenced = c.aggregate.min_fidelity === 'L0' || c.aggregate.confirmed_members === 0;
+        // Under-evidenced = no CONFIRMED L1+ member at all. A cluster that mixes confirmed
+        // executed findings with L0 predictions is actionable (the rank discount handles the mix).
+        const underEvidenced = c.aggregate.confirmed_members === 0;
         return {
           cluster_id: c.cluster_id, priority: i + 1, problem: c.likely_root_cause, fix_locus: c.fix_locus,
           change: underEvidenced ? `Promote ${c.cluster_id} to L2 and re-measure before changing code` : `Apply smallest fix at ${c.fix_locus} for ${c.issue_class}`,
@@ -334,8 +401,8 @@ function offlineEngine() {
     skeptic(plan, clusters) {
       for (const item of plan.items) {
         const c = clusters.find(x => x.cluster_id === item.cluster_id);
-        if (!c || c.aggregate.min_fidelity === 'L0' || c.aggregate.confirmed_members === 0) {
-          item.skeptic_verdict = 'needs-more-evidence'; item.skeptic_note = 'L0-only or unconfirmed; promote to L2 first';
+        if (!c || c.aggregate.confirmed_members === 0) {
+          item.skeptic_verdict = 'needs-more-evidence'; item.skeptic_note = 'no CONFIRMED L1+ member; promote to L2 first';
         } else if (item.regression_test_ids.length < 2) {
           item.skeptic_verdict = 'narrowed'; item.skeptic_note = 'insufficient regression coverage; add variants';
         } else {
@@ -415,86 +482,258 @@ async function runCampaign({ config, engine, adapter, kitDir = KIT, now = '2026-
   const fpPath = join(memDir, 'scenario_fingerprints.jsonl');
   const history = existsSync(fpPath) ? readFileSync(fpPath, 'utf8').trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : [];
 
-  const allFindings = [];
+  const runsById = new Map(); // scenario_id -> { scenario, trace, panel, consensus, agreement, blindDelta, findings, promotedL2 }
+  const allFindingsNow = () => [...runsById.values()].flatMap(r => r.findings);
   let clusters = [];
   let dryStreak = 0;
   const seenClusterIds = new Set();
   const roundSummaries = [];
   const maxRepeat = config.scenario_plan.max_repeat_similarity ?? 0.82;
   const sampleRate = config.fidelity.real_execution_sample_rate ?? 0;
+  const strategy = config.fidelity.sample_strategy ?? 'stratified';
+  const panelSize = config.scoring.judge_panel_size ?? 1;
+  // Blind judges (statistics §3): with a panel, at least one judge scores without seeing the
+  // Smith's hypothesis, so hypothesis-anchoring shows up as a blind-vs-sighted delta.
+  const blindCount = panelSize >= 2 ? Math.max(1, Math.floor(panelSize * (config.scoring.blind_fraction ?? 0.5))) : 0;
+
+  // Fidelity-honesty enforcement (fidelity-ladder): a prediction can never be CONFIRMED —
+  // verify at L0 caps at UNCERTAIN. Enforced here, not hoped for in the role prompt.
+  const clampVerify = (f) => { if (f.fidelity === 'L0' && f.verify_status === 'CONFIRMED') f.verify_status = 'UNCERTAIN'; return f; };
+
+  const persistTrace = (scenario, trace) => {
+    trace.evidence_ref = `runs/${runId}/raw_traces/${scenario.scenario_id}.${trace.fidelity}.json`;
+    writeJson(join(runDir, 'raw_traces'), `${scenario.scenario_id}.${trace.fidelity}.json`, trace);
+    appendFileSync(join(runDir, 'traces.jsonl'), JSON.stringify(trace) + '\n');
+  };
+
+  // Coverage matrix (statistics §1): cell -> { n, sum, confirmed }, cumulative across the
+  // campaign. n counts scored traces (a promoted scenario contributes its L0 and L2 runs).
+  const cellOf = new Map(history.map(h => [h.scenario_id, h.coverage_cell]));
+  const cellStats = new Map();
+  const bumpCell = (cell, overall) => {
+    if (!cell) return;
+    const c = cellStats.get(cell) || { n: 0, sum: 0, confirmed: 0 };
+    c.n++; c.sum += overall; cellStats.set(cell, c);
+  };
+  // Replay campaign memory so coverage spans prior runs of this campaign.
+  const tsPath = join(memDir, 'score_timeseries.jsonl');
+  if (existsSync(tsPath)) {
+    for (const l of readFileSync(tsPath, 'utf8').trim().split('\n').filter(Boolean)) {
+      const r = JSON.parse(l);
+      bumpCell(cellOf.get(r.scenario_id), r.overall ?? 0);
+    }
+  }
+  const priorConfirmed = new Map(); // last record per finding id wins — the log is append-only
+  const ltfPath = join(memDir, 'long_term_findings.jsonl');
+  if (existsSync(ltfPath)) {
+    const lastById = new Map();
+    for (const l of readFileSync(ltfPath, 'utf8').trim().split('\n').filter(Boolean)) { const f = JSON.parse(l); lastById.set(f.id, f); }
+    for (const f of lastById.values()) {
+      if (f.verify_status !== 'CONFIRMED' || f.fidelity === 'L0') continue;
+      const cell = cellOf.get(f.scenario_id);
+      if (cell) priorConfirmed.set(cell, (priorConfirmed.get(cell) || 0) + 1);
+    }
+  }
+  const recomputeConfirmed = () => {
+    for (const [cell, c] of cellStats) c.confirmed = priorConfirmed.get(cell) || 0;
+    for (const f of allFindingsNow()) {
+      if (f.verify_status !== 'CONFIRMED' || f.fidelity === 'L0') continue;
+      const c = cellStats.get(cellOf.get(f.scenario_id));
+      if (c) c.confirmed++;
+    }
+  };
+  const writeCoverage = (round) => {
+    recomputeConfirmed();
+    const cells = [...cellStats.entries()]
+      .map(([cell, c]) => ({ cell, n: c.n, n_confirmed: c.confirmed, mean_overall: Math.round((c.sum / Math.max(c.n, 1)) * 100) / 100 }))
+      .sort((a, b) => a.cell.localeCompare(b.cell));
+    writeJson(runDir, 'coverage_matrix.json', {
+      as_of_round: round,
+      min_samples_per_cell: config.stopping_rule.min_samples_per_cell ?? 5,
+      note: 'n counts scored traces (a promoted scenario contributes its L0 and L2 runs)',
+      cells,
+    });
+  };
+  // Stopping-rule condition 2 (statistics §5): every cell touched by a top-ranked cluster
+  // has met the sample floor.
+  const sampleFloorMet = (cs) => {
+    const minN = config.stopping_rule.min_samples_per_cell ?? 5;
+    const byId = new Map(allFindingsNow().map(f => [f.id, f]));
+    for (const c of cs.slice(0, 3)) {
+      const cells = new Set((c.member_findings || []).map(id => byId.get(id)).filter(Boolean).map(f => cellOf.get(f.scenario_id)).filter(Boolean));
+      for (const cell of cells) if ((cellStats.get(cell)?.n ?? 0) < minN) return false;
+    }
+    return true;
+  };
+
+  const judgePanel = async (scenario, trace) => {
+    const panel = [];
+    for (let j = 0; j < panelSize; j++) {
+      const blind = j < blindCount;
+      const view = blind ? redactForBlindJudge(scenario, trace) : { scenario, trace };
+      const s = await engine.judge(view.scenario, view.trace, j);
+      s.blind = blind;
+      panel.push(s);
+      appendFileSync(join(runDir, 'scores.jsonl'), JSON.stringify(s) + '\n');
+    }
+    const consensus = median(panel.map(p => p.overall));
+    const b = panel.filter(p => p.blind).map(p => p.overall);
+    const g = panel.filter(p => !p.blind).map(p => p.overall);
+    const blindDelta = b.length && g.length ? Math.round((median(g) - median(b)) * 100) / 100 : null;
+    bumpCell(scenario.fingerprint?.coverage_cell ?? cellOf.get(scenario.scenario_id), consensus);
+    return { panel, consensus, agreement: agreementWithin1(panel), blindDelta };
+  };
+
+  // Execute one scenario for real and reconcile its predictions against what happened:
+  // a prediction the L2 run re-observes is upgraded (superseded by the L2 record, ladder rule 5);
+  // a prediction the L2 run contradicts is kept as REFUTED (rule 6 — a static-analysis blind
+  // spot worth remembering). Returns the changed/new records for append-after-settle callers.
+  const promoteRun = async (run, round) => {
+    const l2 = await engine.simulator(adapter, run.scenario, 'L2');
+    persistTrace(run.scenario, l2);
+    const jp = await judgePanel(run.scenario, l2);
+    appendJsonl('score_timeseries.jsonl', { ts: now, round, scenario_id: run.scenario.scenario_id, mode: run.scenario.mode, overall: jp.consensus, fidelity: l2.fidelity });
+    const l2Findings = [];
+    for (const f of await engine.findingsFrom(run.scenario, l2, jp.consensus)) l2Findings.push(clampVerify(await engine.verify({ ...f, run_id: runId, ts: now })));
+    const kept = [], changed = [];
+    let upgraded = 0, refuted = 0;
+    for (const f of run.findings) {
+      if (f.fidelity !== 'L0' && f.fidelity !== 'L1') { kept.push(f); continue; }
+      if (l2Findings.some(g => g.issue_class === f.issue_class)) { upgraded++; continue; }
+      f.verify_status = 'REFUTED'; refuted++; kept.push(f); changed.push(f);
+    }
+    run.findings = [...kept, ...l2Findings];
+    run.trace = l2; run.consensus = jp.consensus; run.promotedL2 = true;
+    changed.push(...l2Findings);
+    return { upgraded, refuted, changed };
+  };
 
   let round = 0;
   while (round < (config.stopping_rule.max_rounds ?? 3)) {
     round++;
-    const roundFindings = [];
+    const roundRuns = [];
     const perMode = Math.max(1, Math.floor(config.scenario_plan.count_per_round / config.evaluation_modes.length));
-    let rejected = 0, accepted = 0, promoted = 0;
+    let rejected = 0, accepted = 0;
 
+    // Pass 1 — generate, gate mechanically, run everything at the default fidelity, judge.
     for (const mode of config.evaluation_modes) {
       for (let i = 0; i < perMode; i++) {
-        const scenario = engine.scenarioSmith({ mode, round, index: round * 100 + i, seedText: config.campaign_id });
-        // Non-repetition gate
+        const scenario = await engine.scenarioSmith({ mode, round, index: round * 100 + i, seedText: config.campaign_id });
+        // Non-repetition gate — computed here in the control flow, never self-assessed.
         const collides = history.some(h => fingerprintSimilarity(scenario.fingerprint, h) > maxRepeat);
         if (collides) { rejected++; continue; }
         history.push(scenario.fingerprint);
+        cellOf.set(scenario.scenario_id, scenario.fingerprint.coverage_cell);
         appendJsonl('scenario_fingerprints.jsonl', scenario.fingerprint);
         appendFileSync(join(runDir, 'scenarios.jsonl'), JSON.stringify(scenario) + '\n');
         accepted++;
 
-        // Fidelity: promote a deterministic sample to L2.
-        const sampleRoll = mulberry32(hashStr(scenario.scenario_id + '|sample'))();
-        const level = sampleRoll < sampleRate ? 'L2' : config.fidelity.default_level;
-        if (level === 'L2') promoted++;
+        const trace = await engine.simulator(adapter, scenario, config.fidelity.default_level);
+        persistTrace(scenario, trace);
+        const jp = await judgePanel(scenario, trace);
+        appendJsonl('score_timeseries.jsonl', { ts: now, round, scenario_id: scenario.scenario_id, mode, overall: jp.consensus, fidelity: trace.fidelity });
 
-        const trace = engine.simulator(adapter, scenario, level);
-        writeJson(join(runDir, 'raw_traces'), `${scenario.scenario_id}.json`, trace);
-        appendFileSync(join(runDir, 'traces.jsonl'), JSON.stringify(trace) + '\n');
-
-        // Judge panel + median reconcile + inter-rater agreement.
-        const panel = [];
-        for (let j = 0; j < (config.scoring.judge_panel_size ?? 1); j++) panel.push(engine.judge(scenario, trace, j));
-        for (const s of panel) appendFileSync(join(runDir, 'scores.jsonl'), JSON.stringify(s) + '\n');
-        const consensus = median(panel.map(p => p.overall));
-        appendJsonl('score_timeseries.jsonl', { ts: now, round, scenario_id: scenario.scenario_id, mode, overall: consensus, fidelity: trace.fidelity });
-
-        // Findings + adversarial verify.
-        const fs = engine.findingsFrom(scenario, trace, consensus).map(f => engine.verify({ ...f, run_id: runId, ts: now }));
-        for (const f of fs) { appendJsonl('long_term_findings.jsonl', f); roundFindings.push(f); allFindings.push(f); }
+        const findings = [];
+        for (const f of await engine.findingsFrom(scenario, trace, jp.consensus)) findings.push(clampVerify(await engine.verify({ ...f, run_id: runId, ts: now })));
+        const run = { scenario, trace, ...jp, findings, promotedL2: false };
+        runsById.set(scenario.scenario_id, run);
+        roundRuns.push(run);
       }
     }
 
-    clusters = engine.cluster(allFindings, clusters, round);
+    // Pass 2 — promote a sample to real execution (highest-risk-first ranks on what the round
+    // actually surfaced), then reconcile predictions against observations.
+    let promoted = 0, upgradedN = 0, refutedN = 0;
+    if (sampleRate > 0 && config.fidelity.default_level !== 'L2' && config.fidelity.default_level !== 'L3' && adapter.execute) {
+      const quota = Math.ceil(accepted * sampleRate);
+      for (const run of pickPromotions(roundRuns, quota, strategy)) {
+        const { upgraded, refuted } = await promoteRun(run, round);
+        promoted++; upgradedN += upgraded; refutedN += refuted;
+      }
+    }
+
+    // Findings settle only after promotion reconciliation, then hit the append-only log once.
+    const roundFindings = [];
+    for (const run of roundRuns) for (const f of run.findings) { appendJsonl('long_term_findings.jsonl', f); roundFindings.push(f); }
+
+    clusters = await engine.cluster(allFindingsNow(), clusters, round);
     writeJson(memDir, 'issue_clusters.json', clusters);
+    writeCoverage(round);
 
     const newClusters = clusters.filter(c => !seenClusterIds.has(c.cluster_id));
     newClusters.forEach(c => seenClusterIds.add(c.cluster_id));
-    if (newClusters.length === 0) dryStreak++; else dryStreak = 0;
+    const floorOk = sampleFloorMet(clusters);
+    // Stopping rule (statistics §5): BOTH conditions — no new clusters AND sample floor met
+    // on the cells the top clusters touch — must hold to advance the dry streak.
+    if (newClusters.length === 0 && floorOk) dryStreak++; else dryStreak = 0;
 
-    roundSummaries.push({ round, accepted, rejected, promoted, findings: roundFindings.length, clusters: clusters.length, newClusters: newClusters.length, dryStreak });
+    const agreementMean = roundRuns.length ? Math.round(roundRuns.reduce((s, r) => s + r.agreement, 0) / roundRuns.length * 100) / 100 : 1;
+    const deltas = roundRuns.map(r => r.blindDelta).filter(d => d !== null);
+    const blindDeltaMean = deltas.length ? Math.round(deltas.reduce((s, d) => s + d, 0) / deltas.length * 100) / 100 : null;
+    roundSummaries.push({ round, accepted, rejected, promoted, upgraded: upgradedN, refuted: refutedN, findings: roundFindings.length, clusters: clusters.length, newClusters: newClusters.length, floorOk, agreementMean, blindDeltaMean, dryStreak });
 
     if (dryStreak >= (config.stopping_rule.dry_rounds ?? 2)) break;
+    // Generator dry: a round that accepts zero scenarios can't learn anything more — every
+    // further round would be identical. Stop and say so instead of burning budget on empties.
+    if (accepted === 0) { roundSummaries[roundSummaries.length - 1].generatorDry = true; break; }
   }
 
-  // Plan -> Skeptic -> Regression
-  let plan = engine.plan(config.campaign_id, profile.target_name, clusters, now);
-  plan = engine.skeptic(plan, clusters);
+  // Plan -> Skeptic gate.
+  let plan = await engine.plan(config.campaign_id, profile.target_name, clusters, now);
+  plan = await engine.skeptic(plan, clusters);
+
+  // Evidence loop-back: 'needs-more-evidence' is actionable while the campaign is still live,
+  // not just a note for next time. One targeted pass: execute the gated clusters'
+  // representatives at L2, reconcile, re-cluster, re-plan, re-gate. Revised findings are
+  // appended as new records with the same id — the log is append-only; last record per id wins.
+  let loopback = null;
+  const nme = plan.items.filter(i => i.skeptic_verdict === 'needs-more-evidence');
+  if (nme.length && adapter.execute) {
+    loopback = { targeted_items: nme.length, promoted: 0, upgraded: 0, refuted: 0 };
+    for (const item of nme.slice(0, 3)) {
+      const c = clusters.find(x => x.cluster_id === item.cluster_id);
+      for (const sid of (c?.representative_examples ?? [])) {
+        const run = runsById.get(sid);
+        if (!run || run.promotedL2) continue;
+        const { upgraded, refuted, changed } = await promoteRun(run, round);
+        for (const f of changed) appendJsonl('long_term_findings.jsonl', f);
+        loopback.promoted++; loopback.upgraded += upgraded; loopback.refuted += refuted;
+      }
+    }
+    if (loopback.promoted) {
+      clusters = await engine.cluster(allFindingsNow(), clusters, round);
+      writeJson(memDir, 'issue_clusters.json', clusters);
+      writeCoverage(round);
+      plan = await engine.skeptic(await engine.plan(config.campaign_id, profile.target_name, clusters, now), clusters);
+    }
+  }
+
+  // Honest-significance cap (statistics §6): 'high-confidence' requires the stopping rule to
+  // have actually fired and a trustworthy panel (agreement >= 0.8). Enforced here — a plan
+  // doesn't get to feel confident about an unconverged campaign.
+  const converged = dryStreak >= (config.stopping_rule.dry_rounds ?? 2);
+  const meanAgreement = roundSummaries.length ? roundSummaries.reduce((s, r) => s + (r.agreementMean ?? 1), 0) / roundSummaries.length : 1;
+  if (plan.evidence_confidence === 'high-confidence' && (!converged || meanAgreement < 0.8)) plan.evidence_confidence = 'directional';
   writeJson(runDir, 'plan.json', plan);
-  const regression = engine.regression(config.campaign_id, plan, clusters);
+
+  const regression = await engine.regression(config.campaign_id, plan, clusters);
   writeJson(runDir, 'regression.json', regression);
   writeJson(memDir, 'regression_watchlist.json', regression.watchlist);
 
   // Summary
-  const converged = dryStreak >= (config.stopping_rule.dry_rounds ?? 2);
+  const generatorDry = roundSummaries.some(r => r.generatorDry);
+  const totalFindings = allFindingsNow().length;
   const summary = [
     `# Campaign ${config.campaign_id} — ${profile.target_name}`,
     ``,
-    `Rounds: ${round} · Converged: ${converged ? 'yes' : 'no (stopped on max_rounds/budget)'}`,
+    `Rounds: ${round} · Converged: ${converged ? 'yes' : generatorDry ? 'no (scenario generator dry — variety exhausted before the sample floor was met)' : 'no (stopped on max_rounds/budget)'}`,
     `Modes: ${config.evaluation_modes.join(', ')}`,
-    `Findings: ${allFindings.length} · Clusters: ${clusters.length}`,
+    `Findings: ${totalFindings} · Clusters: ${clusters.length}`,
     `Evidence confidence: **${plan.evidence_confidence}**`,
     ``,
     `## Round log`,
-    ...roundSummaries.map(r => `- Round ${r.round}: +${r.accepted} scenarios (${r.rejected} dup-rejected, ${r.promoted} promoted to L2), ${r.findings} findings, ${r.newClusters} new clusters, dryStreak=${r.dryStreak}`),
+    ...roundSummaries.map(r => `- Round ${r.round}: +${r.accepted} scenarios (${r.rejected} dup-rejected), ${r.promoted} promoted to L2 (${r.upgraded} upgraded, ${r.refuted} refuted), ${r.findings} findings, ${r.newClusters} new clusters, agreement ${r.agreementMean}${r.blindDeltaMean !== null ? `, blind-vs-sighted delta ${r.blindDeltaMean}` : ''}, floor ${r.floorOk ? 'met' : 'unmet'}, dryStreak=${r.dryStreak}${r.generatorDry ? ' — generator dry, stopping' : ''}`),
+    ...(loopback ? [``, `## Evidence loop-back`, `- ${loopback.targeted_items} plan item(s) gated needs-more-evidence; ${loopback.promoted} representative scenario(s) executed at L2 — ${loopback.upgraded} prediction(s) upgraded, ${loopback.refuted} refuted; clusters and plan re-gated.`] : []),
     ``,
     `## Top clusters`,
     ...clusters.slice(0, 8).map((c, i) => `${i + 1}. ${c.cluster_id} — rank ${c.rank_score}, sev ${c.aggregate.severity}, prev ${c.aggregate.prevalence}, minFid ${c.aggregate.min_fidelity}, confirmed ${c.aggregate.confirmed_members}/${c.member_findings.length}`),
@@ -505,7 +744,7 @@ async function runCampaign({ config, engine, adapter, kitDir = KIT, now = '2026-
   writeFileSync(join(runDir, 'summary.md'), summary);
   writeJson(runDir, 'config.json', config);
 
-  return { runDir, converged, rounds: round, findings: allFindings.length, clusters: clusters.length, evidence_confidence: plan.evidence_confidence };
+  return { runDir, converged, rounds: round, findings: totalFindings, clusters: clusters.length, evidence_confidence: plan.evidence_confidence, evidence_loopback: loopback ? loopback.promoted : 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -518,7 +757,7 @@ function defaultConfig() {
     evaluation_modes: ['efficiency', 'agent-logic', 'security', 'stall-conditions'],
     fidelity: { default_level: 'L0', real_execution_sample_rate: 0.25, sample_strategy: 'highest-risk-first' },
     scenario_plan: { count_per_round: 12, mix: { realistic: 0.4, adversarial: 0.4, edge_case: 0.2 }, max_repeat_similarity: 0.82, seed_sets: ['internal_templates'] },
-    scoring: { axes: AXES, judge_panel_size: 3, weighting_profile: 'default' },
+    scoring: { axes: AXES, judge_panel_size: 3, blind_fraction: 0.5, weighting_profile: 'default' },
     stopping_rule: { dry_rounds: 2, min_samples_per_cell: 3, max_rounds: 4 },
     memory_mode: 'append_only',
   };
@@ -537,4 +776,4 @@ async function main() {
 const isDirect = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirect) { main().catch(e => { console.error(e); process.exit(1); }); }
 
-export { runCampaign, offlineEngine, workflowEngine, makeSimulationAdapter, fingerprintSimilarity };
+export { runCampaign, offlineEngine, workflowEngine, makeSimulationAdapter, fingerprintSimilarity, normalizedTextTrigramCosine, redactForBlindJudge, agreementWithin1, pickPromotions };

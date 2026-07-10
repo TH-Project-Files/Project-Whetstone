@@ -1,22 +1,22 @@
 {
-  "scenario_id": "eff-r1-101",
-  "fidelity": "L2",
+  "scenario_id": "sta-r2-202",
+  "fidelity": "L0",
   "adapter": "simulation",
   "ideal_path": [
     {
       "n": 0,
       "actor": "orchestrator",
-      "action": "resolve-subject"
+      "action": "plan"
     },
     {
       "n": 1,
       "actor": "orchestrator",
-      "action": "single-status"
+      "action": "iterate"
     },
     {
       "n": 2,
       "actor": "orchestrator",
-      "action": "answer"
+      "action": "terminate"
     }
   ],
   "actual_path": [
@@ -34,13 +34,13 @@
     },
     {
       "n": 2,
-      "actor": "reader",
+      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     },
     {
       "n": 3,
-      "actor": "analyst",
+      "actor": "reader",
       "action": "tool_call",
       "output_shape": "rows"
     },
@@ -52,7 +52,7 @@
     },
     {
       "n": 5,
-      "actor": "reader",
+      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     },
@@ -64,7 +64,7 @@
     },
     {
       "n": 7,
-      "actor": "analyst",
+      "actor": "reader",
       "action": "tool_call",
       "output_shape": "rows"
     },
@@ -73,62 +73,25 @@
       "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
-    },
-    {
-      "n": 9,
-      "actor": "analyst",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 10,
-      "actor": "reader",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 11,
-      "actor": "reader",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 12,
-      "actor": "reader",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 13,
-      "actor": "analyst",
-      "action": "tool_call",
-      "output_shape": "rows"
-    },
-    {
-      "n": 14,
-      "actor": "analyst",
-      "action": "tool_call",
-      "output_shape": "rows"
     }
   ],
-  "final_answer": "Predicted answer for eff-r1-101",
+  "final_answer": "Predicted answer for sta-r2-202",
   "divergence": {
-    "summary": "unnecessary-call, duplicate-work, retry-loop",
-    "extra_steps": 11,
+    "summary": "retry-loop, stall",
+    "extra_steps": 5,
     "missing_steps": 0,
     "wrong_order": false
   },
   "annotations": [
-    "unnecessary-call",
-    "duplicate-work",
-    "retry-loop"
+    "retry-loop",
+    "stall"
   ],
   "cost": {
-    "tool_calls": 14,
-    "turns": 15,
-    "est_tokens": 5400,
-    "wall_ms": 2180,
-    "estimated": false
+    "tool_calls": 8,
+    "turns": 9,
+    "est_tokens": 3600,
+    "wall_ms": 1460,
+    "estimated": true
   },
-  "evidence_ref": "runs/RUN/raw_traces/eff-r1-101.json"
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/sta-r2-202.L0.json"
 }

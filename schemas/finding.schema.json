@@ -29,7 +29,7 @@
     "reproducibility": { "type": "string", "enum": ["deterministic", "likely", "intermittent", "one-off"] },
     "regression_risk_if_fixed_poorly": { "type": "integer", "minimum": 1, "maximum": 5 },
     "fidelity": { "type": "string", "enum": ["L0", "L1", "L2", "L3"], "description": "Highest fidelity at which this finding was observed." },
-    "verify_status": { "type": "string", "enum": ["CONFIRMED", "UNCERTAIN", "REFUTED"], "description": "Result of the adversarial-verify pass. Default-to-skeptical: CONFIRMED only if a verifier could independently reproduce it." },
+    "verify_status": { "type": "string", "enum": ["CONFIRMED", "UNCERTAIN", "REFUTED"], "description": "Result of the adversarial-verify pass. Default-to-skeptical: CONFIRMED only if a verifier could independently reproduce it, and never at L0 — a prediction's evidence is itself predicted, so verify at L0 caps at UNCERTAIN until execution (L1+) supplies checkable evidence. The orchestrating harness (or reference runner) enforces this clamp mechanically." },
     "prompt_only_fix_plausible": { "type": "boolean", "description": "Can a prompt/policy edit fix it, or is a tool/system change required?" },
     "evidence_ref": { "type": "string", "description": "Path to the trace/log substantiating this finding." }
   }

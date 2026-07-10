@@ -9,6 +9,7 @@
   "properties": {
     "scenario_id": { "type": "string" },
     "judge_id": { "type": "string", "description": "Identifier for this judge instance (enables inter-rater agreement)." },
+    "blind": { "type": "boolean", "description": "True if this judge scored without the Smith's hypothesis (expected_ideal_path, likely_failure_risks) or the Simulator's derivations from it (ideal_path, divergence). The blind-vs-sighted consensus delta is the hypothesis-anchoring diagnostic (rubrics/statistics.md §3)." },
     "fidelity": { "type": "string", "enum": ["L0", "L1", "L2", "L3"] },
     "axes": {
       "type": "array",

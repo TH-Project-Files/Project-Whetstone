@@ -1,5 +1,5 @@
 {
-  "scenario_id": "eff-r1-102",
+  "scenario_id": "eff-r1-101",
   "fidelity": "L0",
   "adapter": "simulation",
   "ideal_path": [
@@ -40,7 +40,7 @@
     },
     {
       "n": 3,
-      "actor": "reader",
+      "actor": "analyst",
       "action": "tool_call",
       "output_shape": "rows"
     },
@@ -55,22 +55,49 @@
       "actor": "reader",
       "action": "tool_call",
       "output_shape": "rows"
+    },
+    {
+      "n": 6,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 7,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 8,
+      "actor": "reader",
+      "action": "tool_call",
+      "output_shape": "rows"
+    },
+    {
+      "n": 9,
+      "actor": "analyst",
+      "action": "tool_call",
+      "output_shape": "rows"
     }
   ],
-  "final_answer": "Predicted answer for eff-r1-102",
+  "final_answer": "Predicted answer for eff-r1-101",
   "divergence": {
-    "summary": "clean",
-    "extra_steps": 2,
+    "summary": "unnecessary-call, retry-loop",
+    "extra_steps": 6,
     "missing_steps": 0,
     "wrong_order": false
   },
-  "annotations": [],
+  "annotations": [
+    "unnecessary-call",
+    "retry-loop"
+  ],
   "cost": {
-    "tool_calls": 5,
-    "turns": 6,
-    "est_tokens": 2700,
-    "wall_ms": 1100,
+    "tool_calls": 9,
+    "turns": 10,
+    "est_tokens": 3900,
+    "wall_ms": 1580,
     "estimated": true
   },
-  "evidence_ref": "runs/RUN/raw_traces/eff-r1-102.json"
+  "evidence_ref": "runs/2026-07-09-run-001/raw_traces/eff-r1-101.L0.json"
 }

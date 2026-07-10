@@ -41,6 +41,7 @@
       "auditability"
     ],
     "judge_panel_size": 3,
+    "blind_fraction": 0.5,
     "weighting_profile": "default"
   },
   "stopping_rule": {

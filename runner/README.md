@@ -30,11 +30,36 @@ memory/issue_clusters.json             # ranked clusters (rewritten each round)
 memory/regression_watchlist.json       # cumulative fragile domains
 runs/<date>-run-001/
   config.json  scenarios.jsonl  traces.jsonl  scores.jsonl
-  raw_traces/<scenario_id>.json
+  raw_traces/<scenario_id>.<fidelity>.json   # a promoted scenario keeps both its L0 and L2 trace
+  coverage_matrix.json                       # per-cell n / n_confirmed / mean (statistics §1)
   plan.json  regression.json  summary.md
 ```
 Run it twice with the same `campaign_id`: the second run's round log shows scenarios rejected by
 the fingerprint gate — proof the non-repetition engine works across runs.
+
+## What the control flow enforces (either engine)
+
+These live in `runCampaign`, not in any role prompt, so they hold no matter what the model does:
+
+- **Similarity gate** — `fingerprintSimilarity` implements `rubrics/statistics.md` §2 verbatim
+  (including the trigram-cosine text term); candidates are rejected mechanically, never by the
+  Smith's self-assessment.
+- **Blind panel split** — per `scoring.blind_fraction`, blind judges receive inputs with the
+  Smith's hypothesis (`expected_ideal_path`, `likely_failure_risks`) and the Simulator's
+  derivations (`ideal_path`, `divergence`) stripped; each round reports the blind-vs-sighted
+  delta as the hypothesis-anchoring diagnostic.
+- **CONFIRMED requires L1+** — verify over an L0 finding is clamped to UNCERTAIN
+  (`rubrics/fidelity-ladder.md` rule 7).
+- **Post-score promotion** — L2 promotion runs *after* judging so `highest-risk-first` ranks on
+  observed severity/consensus; each promoted scenario's L0 predictions are reconciled against
+  the executed trace (re-observed → upgraded, contradicted → REFUTED, ladder rules 5–6).
+- **Two-condition stopping** — the dry streak only advances when no new cluster appeared *and*
+  the top clusters' cells meet `min_samples_per_cell`; a zero-accept round stops as
+  "generator dry."
+- **Evidence loop-back** — Skeptic `needs-more-evidence` verdicts trigger one targeted L2 pass
+  on the gated clusters' representatives, then re-cluster and re-gate the plan.
+- **Honest-significance cap** — `plan.evidence_confidence` is capped at `directional` when the
+  stopping rule didn't fire or judge agreement < 0.8 (`rubrics/statistics.md` §6).
 
 ## Run a real campaign (Workflow tool)
 
