@@ -34,10 +34,12 @@ critic↔planner loop, grind down the real flaws, and leave every prior improvem
 ## The loop in one picture
 
 ```
-characterize → generate → run(sim + sampled real) → score(panel) → verify(refute) →
-cluster → plan(smallest fix) → skeptic-gate → regression-pack → implement → re-measure → repeat
-                                    ▲                                                        │
-                                    └──────────── until new looks stop revealing new flaws ──┘
+characterize
+  → [ generate(gated) → run(sim) → score(blind+sighted panel) → verify(refute)
+      → promote(riskiest to real; upgrade/refute) → cluster ]  ×rounds, until dry
+  → plan(smallest fix) → skeptic-gate
+      └ needs-more-evidence? → targeted real pass → re-cluster → re-gate
+  → regression-pack → implement → re-measure → repeat
 ```
 
 Two ideas do most of the work:
