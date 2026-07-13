@@ -22,7 +22,7 @@ experiment's principal investigator, not a participant.
    a. **Generate** — dispatch the **Scenario Smith** (`02`) with the enabled modes, the
       per-round count, the mix, and the *full* fingerprint history. The similarity gate is
       computed mechanically — run a short script in your harness (or reuse
-      `fingerprintSimilarity` from `runner/whetstone.workflow.js`, which implements
+      `fingerprintSimilarity` from `runner/gristmill.workflow.js`, which implements
       `rubrics/statistics.md` §2); reject any candidate above `max_repeat_similarity`. An LLM
       eyeballing "is this too similar?" is not a gate; the Smith never self-certifies novelty.
    b. **Run** — for each accepted scenario, dispatch the **Run Simulator** (`03`) at
@@ -76,7 +76,7 @@ top clusters, convergence verdict, and the plan headline.
   nothing is rewritten in place.
 - **Fidelity honesty** — a datum's fidelity is set at capture and never inflated.
 - **Role separation** — the agent that generated a scenario never scores it; a Judge never
-  grades its own verify pass. This is what keeps stone-polishing from becoming self-congratulation.
+  grades its own verify pass. This is what keeps the grind from becoming self-congratulation.
 - **Timestamps come from outside.** Never invent a timestamp; take it from the harness/operator.
 - **Stop when the rule says stop** — not when findings feel "interesting enough," and not after
   one shallow pass. See `rubrics/statistics.md` §5.

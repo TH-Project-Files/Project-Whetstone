@@ -1,6 +1,6 @@
 # The Fidelity Ladder
 
-The single most important discipline in Whetstone. Every trace, score, finding, and cluster
+The single most important discipline in Gristmill. Every trace, score, finding, and cluster
 carries a **fidelity level** recording *how the evidence was obtained*. Conclusions are weighted
 by fidelity, and predictions are never reported as facts.
 

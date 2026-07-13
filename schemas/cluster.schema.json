@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/cluster.schema.json",
+  "$id": "https://gristmill.kit/schemas/cluster.schema.json",
   "title": "IssueCluster",
   "description": "A group of findings sharing a root cause. Produced by the Root-Cause Analyst (roles/05-root-cause-analyst.md). Persisted in workspace/<campaign>/memory/issue_clusters.json (rewritten each round; the underlying findings stay append-only). Ranked by severity x prevalence x leverage, minus regression risk.",
   "type": "object",

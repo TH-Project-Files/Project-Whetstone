@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/run-config.schema.json",
+  "$id": "https://gristmill.kit/schemas/run-config.schema.json",
   "title": "RunConfig",
   "description": "Operator configuration for one polishing campaign. Read by the Controller (roles/00-controller.md).",
   "type": "object",

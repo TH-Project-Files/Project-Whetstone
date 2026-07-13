@@ -1,6 +1,6 @@
 # The Target Adapter Contract
 
-An **adapter** is the only target-specific code in Whetstone. Everything else — roles, modes,
+An **adapter** is the only target-specific code in Gristmill. Everything else — roles, modes,
 schemas, rubrics, runner — is agnostic. The adapter translates between the kit and one concrete
 agent under test. Swap the adapter and the same methodology polishes a different agent.
 
@@ -16,7 +16,7 @@ execute(scenario)     -> RawRun                 // optional — real run, enable
 ```
 
 The runner treats these as async and tolerant: any may be absent. The reference runner ships a
-JS shape (`runner/whetstone.workflow.js` expects an object with these methods), but the contract
+JS shape (`runner/gristmill.workflow.js` expects an object with these methods), but the contract
 is language-agnostic — an adapter can be a shell wrapper, an HTTP client, or a doc reader.
 
 ### `describe() -> TargetDescription` (required)

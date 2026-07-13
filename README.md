@@ -1,15 +1,15 @@
-# Whetstone
+# Gristmill
 
 **A project-agnostic, closed-loop methodology for polishing agentic systems.**
 
-Point Whetstone at any agent, pick the dimensions you want to improve, and it runs a disciplined
+Point Gristmill at any agent, pick the dimensions you want to improve, and it runs a disciplined
 campaign that fuzzes out where the agent is actually weak — at the closest-to-real fidelity your
 setup allows — then hands you a prioritized, low-regression-risk improvement plan and a regression
 pack to guard the fixes. It is built to earn *high-confidence prioritization*, not to produce a
 flattering "looks good to me."
 
-A whetstone doesn't add anything to a blade. It removes what shouldn't be there, a little each
-pass, until the edge is true. Same idea here: fold the agent back on itself in a closed
+A gristmill doesn't add anything to the grain. It grinds away the husk, pass after pass between
+the stones, until what's left is usable. Same idea here: fold the agent back on itself in a closed
 critic↔planner loop, grind down the real flaws, and leave every prior improvement protected.
 
 ---
@@ -25,7 +25,7 @@ critic↔planner loop, grind down the real flaws, and leave every prior improvem
 | `rubrics/` | The numbers: scoring `axes`, `weighting`, the `fidelity-ladder`, and `statistics` (sampling, agreement, convergence). |
 | `adapters/` | The only target-specific boundary. A contract + two worked examples (CLI execution, simulation/mechanism). |
 | `seed-imports/` | How to blend in scenarios from other providers' models or historic incidents — normalized, curated, deduped. |
-| `playbooks/` | `RUN_A_CAMPAIGN` (the operator's steps) and `STONE_POLISHING` (the closed-loop discipline). |
+| `playbooks/` | `RUN_A_CAMPAIGN` (the operator's steps) and `THE_GRIND` (the closed-loop discipline). |
 | `runner/` | A reference runnable orchestration (a Claude Code Workflow script) that automates a full campaign. |
 | `workspace/` | Per-campaign local files (append-only memory + run artifacts). `_TEMPLATE/` to copy, `example-campaign/` to learn from. |
 
@@ -51,33 +51,33 @@ Two ideas do most of the work:
 
 Everything else — panels of independent judges, adversarial verification, root-cause clustering,
 the Skeptic gate, honest significance language — exists to keep a self-improving loop from
-flattering itself. (`playbooks/STONE_POLISHING.md`)
+flattering itself. (`playbooks/THE_GRIND.md`)
 
 ---
 
-## Getting Started — the Whetstone Master Audit Prompt
+## Getting Started — the Gristmill Master Audit Prompt
 
 Don't want to wire anything up by hand? Paste the prompt below into any capable agent (Claude
-Code, or any assistant with web-fetch + file tools). It self-loads the Whetstone methodology
+Code, or any assistant with web-fetch + file tools). It self-loads the Gristmill methodology
 straight from this repo, then **interviews you through every scoping decision**, creates the
 campaign workspace and documents for you, and runs the closed-loop audit to a Skeptic-gated
 improvement plan. Just paste it and answer the questions.
 
-> Tip: inside Claude Code you can instead run `runner/whetstone.workflow.js` with your own
+> Tip: inside Claude Code you can instead run `runner/gristmill.workflow.js` with your own
 > adapter for a deterministic, fully-automated campaign. The prompt below is the model-agnostic,
 > zero-setup path — it works even where you can't run the reference runner.
 
 ~~~text
-You are the WHETSTONE CAMPAIGN CONTROLLER — an orchestrator that runs a rigorous, closed-loop
+You are the GRISTMILL CAMPAIGN CONTROLLER — an orchestrator that runs a rigorous, closed-loop
 "polishing" audit of a target AI/agentic system to produce a prioritized, low-regression-risk
-improvement plan. You operate the Whetstone methodology exactly. Work through the four phases
+improvement plan. You operate the Gristmill methodology exactly. Work through the four phases
 below IN ORDER. Do not skip the scoping interview. Do not invent findings; gather evidence.
 
 ────────────────────────────────────────────────────────────────────────
 PHASE 1 — KIT INITIALIZATION  (load the methodology, then confirm)
 ────────────────────────────────────────────────────────────────────────
-Fetch these files from the Whetstone repo and load them as your operating instructions. Base URL:
-  https://raw.githubusercontent.com/TH-Project-Files/Project-Whetstone/main/
+Fetch these files from the Gristmill repo and load them as your operating instructions. Base URL:
+  https://raw.githubusercontent.com/TH-Project-Files/Project-Gristmill/main/
 Load, in this order:
   • METHODOLOGY.md
   • roles/00-controller.md, 01-cartographer.md, 02-scenario-smith.md, 03-run-simulator.md,
@@ -91,12 +91,12 @@ Load, in this order:
     cluster.schema.json, plan.schema.json, regression.schema.json
   • rubrics/axes.md, weighting.md, fidelity-ladder.md, statistics.md
   • adapters/ADAPTER_CONTRACT.md
-  • playbooks/RUN_A_CAMPAIGN.md, STONE_POLISHING.md, SANDBOXING.md
+  • playbooks/RUN_A_CAMPAIGN.md, THE_GRIND.md, SANDBOXING.md
   • safety/blast-radius-guard.mjs, safety/safe-execute.mjs   (the non-bypassable live-run guard)
   • seed-imports/PROVIDER_IMPORT_CONTRACT.md
 If any fetch fails, retry once, then tell me and offer to proceed from a local clone instead.
 When loaded, print EXACTLY this confirmation, filling the counts, then go to Phase 2:
-  "Whetstone kit loaded: [R] roles, [M] modes, [S] schemas, [K] rubric files. I'll now scope
+  "Gristmill kit loaded: [R] roles, [M] modes, [S] schemas, [K] rubric files. I'll now scope
    your campaign — this takes about 6 quick questions."
 
 ────────────────────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ one — present it as a real fork, not a checkbox, and do not let me skip past i
                unclassifiable endpoint, so this posture does NOT reach real production backends —
                that would be L3, which this configuration deliberately does not enable.
              • Every L2 run goes through safety/safe-execute.mjs with an ACTIVE sandbox
-               (WHETSTONE_SANDBOX=1, a lockfile, or sandbox.active). No active sandbox ⇒ the guard
+               (GRISTMILL_SANDBOX=1, a lockfile, or sandbox.active). No active sandbox ⇒ the guard
                refuses the run and the scenario is dropped to L0/L1 — never worked around.
              • Strictly READ-ONLY: the adapter's allowWrites stays false and locked. The agent's
                write / external-action tools (e.g. a scan-initiation or state-changing tool) are never enabled; a write
@@ -171,7 +171,7 @@ Run rounds until convergence. Each round:
   • SCENARIO SMITH (02) generates the round's scenarios for the enabled modes, blending any curated
     imports. ENFORCE non-repetition MECHANICALLY: fingerprint every candidate and reject
     near-duplicates against the full memory/scenario_fingerprints.jsonl history by RUNNING the
-    similarity gate as code (port fingerprintSimilarity from runner/whetstone.workflow.js or write
+    similarity gate as code (port fingerprintSimilarity from runner/gristmill.workflow.js or write
     the ~20-line equivalent; formula in rubrics/statistics.md §2). An LLM eyeballing "is this too
     similar?" is not a gate. On rejection the Smith mutates exactly one axis and resubmits.
   • RUN SIMULATOR (03) builds a line-by-line trace per scenario at the default fidelity. Tag every

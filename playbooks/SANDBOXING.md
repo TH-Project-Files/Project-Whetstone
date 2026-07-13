@@ -1,6 +1,6 @@
 # Playbook: Sandboxing — the "Shadow Campus" pattern
 
-Whetstone's fidelity ladder rewards running the target agent for real (L2/L3) — that's how
+Gristmill's fidelity ladder rewards running the target agent for real (L2/L3) — that's how
 predictions get confirmed and emergent behavior gets caught. But a real run of a campus agent can
 reach out and touch real systems: student records, directory, ticketing, mail. Testing must never
 change production state.
@@ -22,7 +22,7 @@ through the wrapper.
 
 ## The invariant (blast-radius guard)
 `safety/blast-radius-guard.mjs` refuses any **L2/L3** run unless BOTH hold:
-1. **A sandbox is declared active** — via `WHETSTONE_SANDBOX=1`, a `WHETSTONE_SANDBOX_LOCKFILE`
+1. **A sandbox is declared active** — via `GRISTMILL_SANDBOX=1`, a `GRISTMILL_SANDBOX_LOCKFILE`
    that exists, or a programmatic `sandbox.active === true`.
 2. **The target endpoint is recognizably non-production** — matches a dev/test/staging/sandbox/
    mock/localhost hint and does *not* match a prod/production/live hint. Unclassifiable endpoints

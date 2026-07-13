@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/plan.schema.json",
+  "$id": "https://gristmill.kit/schemas/plan.schema.json",
   "title": "ImprovementPlan",
   "description": "The remediation output of a campaign. Produced by the Remediation Planner (roles/06-remediation-planner.md) and gated by the Skeptic (roles/07-skeptic.md). Each item targets one cluster with the smallest effective fix.",
   "type": "object",

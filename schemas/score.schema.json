@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/score.schema.json",
+  "$id": "https://gristmill.kit/schemas/score.schema.json",
   "title": "RunScore",
   "description": "Multi-axis score for one (scenario, trace) pair. Produced by each Trace Judge (roles/04-trace-judge.md). With a judge panel >1, one RunScore per judge is written and the harness reconciles them (rubrics/statistics.md).",
   "type": "object",

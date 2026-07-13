@@ -1,9 +1,9 @@
 # Playbook: Run a polishing campaign
 
-The operator's step-by-step. A campaign points Whetstone at one target, runs rounds until the
+The operator's step-by-step. A campaign points Gristmill at one target, runs rounds until the
 evidence converges, and ends with a Skeptic-gated improvement plan plus a regression pack. You
 can drive it by hand (dispatch each role prompt yourself) or with the reference runner
-(`runner/whetstone.workflow.js`); this playbook is the by-hand mental model the runner automates.
+(`runner/gristmill.workflow.js`); this playbook is the by-hand mental model the runner automates.
 
 ## 0. Prerequisites
 - A **target adapter** for your agent (`adapters/ADAPTER_CONTRACT.md`). Minimum: `describe()`.

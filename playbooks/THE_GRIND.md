@@ -1,10 +1,11 @@
-# Playbook: Stone polishing — the closed critic↔planner loop
+# Playbook: The grind — the closed critic↔planner loop
 
-"Stone polishing" is the practice of folding an agent back on itself in a closed loop to grind
-down its rough edges over many passes. Done naively it degrades into self-congratulation: an
-agent that critiques itself, plans a fix from its own flawed critique, and grades the fix as a
-success. Whetstone makes it *work* through one discipline: **role separation with an adversarial
-gate**. This playbook explains the loop and how to keep it honest.
+"The grind" is the practice of folding an agent back on itself in a closed loop, running it
+between two millstones of critique and repair, pass after pass, until what comes out is refined.
+Done naively it degrades into self-congratulation: an agent that critiques itself, plans a fix
+from its own flawed critique, and grades the fix as a success. Gristmill makes it *work* through
+one discipline: **role separation with an adversarial gate**. This playbook explains the loop and
+how to keep it honest.
 
 ## The failure mode we're avoiding
 A single agent doing generate → critique → fix → grade in one head will:
@@ -16,10 +17,10 @@ A single agent doing generate → critique → fix → grade in one head will:
 Every rule below exists to break one of those.
 
 ## The rotation (who may not be who)
-Map the six classic polishing roles onto Whetstone's roles. The hard constraint: **the agent that
+Map the six classic milling roles onto Gristmill's roles. The hard constraint: **the agent that
 produced an artifact never judges it, and the judge never grades its own verification.**
 
-| Polishing role | Whetstone role | Must be independent of |
+| Milling role | Gristmill role | Must be independent of |
 |---|---|---|
 | Builder (predicts intended/best behavior) | Scenario Smith's `expected_ideal_path` + Simulator's ideal path | the Judge |
 | Breaker (hunts failure) | Scenario Smith (adversarial families) + Simulator's risk annotations | — |
@@ -31,7 +32,7 @@ produced an artifact never judges it, and the judge never grades its own verific
 The Root-Cause Analyst and Regression Warden are the connective tissue that make the loop
 *longitudinal* rather than one-shot.
 
-## The loop, one turn of the stone
+## The loop, one turn of the wheel
 ```
         ┌─────────────────────────────────────────────────────────┐
         ▼                                                         │
@@ -47,9 +48,9 @@ The Root-Cause Analyst and Regression Warden are the connective tissue that make
         │                                     ▼ accept
         └───────────── regression pack (Warden) ─▶ implement ─▶ re-measure ─▶ next turn
 ```
-Each turn leaves the stone (the target) a little smoother, and leaves *the loop itself* smarter:
-the fingerprint history grows (so the next turn asks new questions), the watchlist grows (so old
-wins stay won), and the cluster stability record grows (so recurring defects rise in priority).
+Each turn leaves the grain (the target) a little finer, and leaves *the loop itself* smarter: the
+fingerprint history grows (so the next turn asks new questions), the watchlist grows (so old wins
+stay won), and the cluster stability record grows (so recurring defects rise in priority).
 
 ## The four honesty rails
 1. **Fidelity before confidence.** A critique of predicted behavior (L0) is a hypothesis. Before
@@ -61,21 +62,22 @@ wins stay won), and the cluster stability record grows (so recurring defects ris
 3. **Root cause, not symptom.** The Analyst clusters by cause so the Planner fixes the mechanism,
    not the one scenario. The Skeptic rejects fixes that key on a literal value. (`roles/05`, `07`)
 4. **Inflation is a regression.** The Warden treats a score that rose via over-refusal/over-
-   escalation as `inflated`, not improved. Polishing must remove flaws without dulling the blade.
+   escalation as `inflated`, not improved. Milling must remove flaws without grinding away what
+   already works.
    (`roles/08`)
 
-## Convergence — when to stop turning the stone
+## Convergence — when to stop turning the wheel
 Two anti-patterns bracket the right answer:
 - **Stopping too early** (one shallow pass) misses the tail of rarer defects.
-- **Polishing forever** overfits and burns budget on diminishing returns.
+- **Milling forever** overfits and burns budget on diminishing returns.
 
 The stopping rule (`rubrics/statistics.md` §5) splits the difference: keep turning until
-`dry_rounds` consecutive rounds surface no *new* cluster **and** the sample floors are met. A
-stone is "polished enough" when new looks stop revealing new flaws — not when you're tired of
+`dry_rounds` consecutive rounds surface no *new* cluster **and** the sample floors are met. The
+grind is "fine enough" when new passes stop revealing new flaws — not when you're tired of
 looking, and not after the first promising crack.
 
-## A note on models polishing models
-You can run the loop with the target and the polishing roles all on the same model, or deliberately
+## A note on models milling models
+You can run the loop with the target and the milling roles all on the same model, or deliberately
 use **different models for different roles** — e.g. one provider's model as Scenario Smith/Breaker,
 another as Judge — and import externally-generated scenarios (`seed-imports/`). Cross-model
 diversity is the strongest defense against shared blind spots: a target rarely fails on the cases

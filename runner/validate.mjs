@@ -1,5 +1,5 @@
 /**
- * Dependency-free JSON Schema validator (subset) for Whetstone artifacts.
+ * Dependency-free JSON Schema validator (subset) for Gristmill artifacts.
  * Supports: type, required, properties, items, enum, $ref (local file + in-doc #/$defs),
  * minimum/maximum, minItems, additionalProperties:false. Enough to conformance-check the
  * schemas/ contracts and any campaign's produced artifacts without pulling in ajv.
@@ -21,7 +21,7 @@ const cache = new Map();
 function loadSchema(idOrPath) {
   if (cache.has(idOrPath)) return cache.get(idOrPath);
   let p = idOrPath;
-  if (idOrPath.startsWith('https://whetstone.kit/schemas/')) p = join(SCHEMAS, idOrPath.split('/').pop());
+  if (idOrPath.startsWith('https://gristmill.kit/schemas/')) p = join(SCHEMAS, idOrPath.split('/').pop());
   const s = JSON.parse(readFileSync(p, 'utf8'));
   cache.set(idOrPath, s);
   return s;

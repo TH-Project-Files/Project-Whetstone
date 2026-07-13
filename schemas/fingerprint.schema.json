@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/fingerprint.schema.json",
+  "$id": "https://gristmill.kit/schemas/fingerprint.schema.json",
   "title": "ScenarioFingerprint",
   "description": "Structural signature of a scenario used by the non-repetition engine. Stored append-only in workspace/<campaign>/memory/scenario_fingerprints.jsonl. Two scenarios collide when their similarity (see rubrics/statistics.md) exceeds run-config.scenario_plan.max_repeat_similarity.",
   "type": "object",

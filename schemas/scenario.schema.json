@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/scenario.schema.json",
+  "$id": "https://gristmill.kit/schemas/scenario.schema.json",
   "title": "Scenario",
   "description": "One reproducible test case. Produced by the Scenario Smith (roles/02-scenario-smith.md). The prompt field is the exact input handed to the target.",
   "type": "object",
@@ -42,6 +42,6 @@
       "items": { "type": "string" }
     },
     "provenance": { "type": "string", "enum": ["internal", "provider-import", "historic-incident", "mutation"], "default": "internal" },
-    "fingerprint": { "$ref": "https://whetstone.kit/schemas/fingerprint.schema.json" }
+    "fingerprint": { "$ref": "https://gristmill.kit/schemas/fingerprint.schema.json" }
   }
 }

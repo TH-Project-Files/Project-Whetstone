@@ -1,6 +1,6 @@
 # Reference runner
 
-`whetstone.workflow.js` automates one campaign end-to-end. It has one control flow
+`gristmill.workflow.js` automates one campaign end-to-end. It has one control flow
 (`runCampaign`) and two interchangeable **engines**:
 
 - **offlineEngine** — deterministic, dependency-free role stand-ins driven by a built-in
@@ -15,9 +15,9 @@
 
 ```bash
 # from the kit root
-node runner/whetstone.workflow.js
+node runner/gristmill.workflow.js
 # or with your own config:
-node runner/whetstone.workflow.js path/to/run-config.json
+node runner/gristmill.workflow.js path/to/run-config.json
 ```
 
 It writes a full campaign under `workspace/<campaign_id>/`:

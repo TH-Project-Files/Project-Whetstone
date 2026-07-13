@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/target-profile.schema.json",
+  "$id": "https://gristmill.kit/schemas/target-profile.schema.json",
   "title": "TargetProfile",
   "description": "Characterization of the agent under test. Produced by the Cartographer (roles/01-cartographer.md) from the adapter's describe() output. Project-agnostic: nothing here names a specific target.",
   "type": "object",

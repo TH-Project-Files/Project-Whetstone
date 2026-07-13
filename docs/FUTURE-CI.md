@@ -1,12 +1,12 @@
 # Future: unattended CI/CD gating (design record — NOT built)
 
-> **Status: deferred, not implemented.** Whetstone today is **harness-native**: campaigns run
+> **Status: deferred, not implemented.** Gristmill today is **harness-native**: campaigns run
 > interactively inside Claude Code / Codex, driven by the Master Audit Prompt (see the README).
 > That is the intended deployment for now. This document records the design for a future
 > unattended CI gate so the idea isn't lost — but none of it exists in the repo yet, by choice.
 
 ## Why it's deferred
-An interactive harness already provides the orchestration Whetstone needs: it sequences tool
+An interactive harness already provides the orchestration Gristmill needs: it sequences tool
 calls, writes artifacts, reprompts on error, and reads the roles straight from this repo. For a
 human-driven "polish my agent" session, a standalone engine would reimplement what the harness
 gives for free and be *less* aligned with a prompt-native method. So we didn't build it.
@@ -18,7 +18,7 @@ blast-radius guard for live runs — **is** built (`safety/`). Everything below 
 ## What "done" would look like
 A team adds one step to their agent's pipeline:
 ```
-npx @whetstone/engine run --config whetstone.config.json \
+npx @gristmill/engine run --config gristmill.config.json \
     --adapter-url $AGENT_SANDBOX_URL \
     --fail-on "severity>=4 && verify_status==CONFIRMED"
 ```
@@ -38,8 +38,8 @@ harness doesn't guarantee; it delegates all role reasoning to the harness you al
    boundary; on failure, re-prompt that role with the validation error as repair feedback before
    anything moves downstream. (`runner/validate.mjs` already does the post-hoc version.)
 3. **Standardized adapter API.** A REST/gRPC profile of the existing `describe/simulate/execute`
-   contract: every campus agent exposes `POST /whetstone/{describe,simulate,execute}`. The engine
-   then tests any agent on the network uniformly; a `whetstone conformance <url>` command certifies
+   contract: every campus agent exposes `POST /gristmill/{describe,simulate,execute}`. The engine
+   then tests any agent on the network uniformly; a `gristmill conformance <url>` command certifies
    an agent implements it. (Today the contract is the in-process JS shape in
    `adapters/ADAPTER_CONTRACT.md` — the network profile is the additive future piece.)
 4. **Provider-agnostic model router.** Config maps role → model behind one `LlmClient` interface
@@ -52,7 +52,7 @@ harness doesn't guarantee; it delegates all role reasoning to the harness you al
 ## What already exists and would be reused
 - `schemas/*.json` — canonical contracts (Zod would mirror, not replace, them).
 - `roles/*.md`, `modes/*.md`, `rubrics/*.md` — the engine executes these; it doesn't fork them.
-- `runner/whetstone.workflow.js` — the deterministic reference control flow to port from.
+- `runner/gristmill.workflow.js` — the deterministic reference control flow to port from.
 - `runner/validate.mjs` — post-hoc validation, reusable as the CI cross-check.
 - `safety/*` — the blast-radius guard + wrapper, reused verbatim.
 

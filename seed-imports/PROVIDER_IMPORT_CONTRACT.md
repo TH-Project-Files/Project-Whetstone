@@ -1,6 +1,6 @@
 # Importing external scenario sets
 
-Whetstone's Scenario Smith generates scenarios, but the strongest campaigns blend in scenarios
+Gristmill's Scenario Smith generates scenarios, but the strongest campaigns blend in scenarios
 from **other sources**: other providers' models (ask GPT/Gemini/etc. to generate adversarial
 cases for the same target profile), historic incidents and support tickets, and mutations of
 past failures. Diversity of *authorship* surfaces blind spots any single generator shares with

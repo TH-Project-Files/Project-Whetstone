@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/regression.schema.json",
+  "$id": "https://gristmill.kit/schemas/regression.schema.json",
   "title": "RegressionPack",
   "description": "Targeted retest bundle built by the Regression Warden (roles/08-regression-warden.md) to verify accepted fixes without over-fitting. Includes the failure-revealing scenarios, close variants (to catch brittle fixes), and neighbors (to catch collateral damage).",
   "type": "object",

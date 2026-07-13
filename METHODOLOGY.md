@@ -1,6 +1,6 @@
-# Whetstone Methodology
+# Gristmill Methodology
 
-The scientific core. Whetstone treats agent improvement as a **measurement-and-improvement
+The scientific core. Gristmill treats agent improvement as a **measurement-and-improvement
 experiment**, not a vibe check. This document states the frame, the eight disciplines that make
 the results trustworthy, and the honest limits of what the evidence can claim.
 
@@ -87,8 +87,8 @@ confirm). And the two gates a model cannot be trusted to hold against itself are
 mechanically, not prompted**: scenario novelty (the similarity gate runs as code against the
 full fingerprint history) and prediction confirmation (a finding born at L0 is clamped to
 UNCERTAIN until execution reproduces it). Score inflation via over-refusal is treated as a
-**regression**, not a win. This is what turns "stone polishing" from a self-licking exercise
-into a disciplined engine. `playbooks/STONE_POLISHING.md`.
+**regression**, not a win. This is what turns "the grind" from a self-licking exercise
+into a disciplined engine. `playbooks/THE_GRIND.md`.
 
 ---
 
@@ -105,7 +105,7 @@ The word "statistically significant" is earned, not asserted. Set `plan.evidence
   variance** (e.g. the same scenarios run K times to separate model nondeterminism from a real
   defect). Breadth of coverage earns "high-confidence," not "significant."
 
-Overclaiming here is itself a defect the Skeptic is instructed to catch. Whetstone's honest
+Overclaiming here is itself a defect the Skeptic is instructed to catch. Gristmill's honest
 deliverable is *high-confidence prioritization of improvement work*, which is exactly what a team
 needs to decide what to fix next — and far more than an unstructured "polish pass" can give.
 

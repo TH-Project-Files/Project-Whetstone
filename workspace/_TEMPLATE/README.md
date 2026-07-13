@@ -25,4 +25,4 @@ Copy this whole directory to `workspace/<your-campaign-id>/` to start a campaign
 and `regression_watchlist.json` are the only files rebuilt in place. This is what lets the
 context window hold the whole campaign history and lets non-repetition span rounds and campaigns.
 
-See `../example-campaign/` for a fully-populated worked example produced by `runner/whetstone.workflow.js`.
+See `../example-campaign/` for a fully-populated worked example produced by `runner/gristmill.workflow.js`.

@@ -1,5 +1,5 @@
 /**
- * Whetstone — Blast-Radius Guard
+ * Gristmill — Blast-Radius Guard
  * ==============================
  * The one safety invariant that must live in code, not in a prompt: NEVER run a live end-to-end
  * test (fidelity L2/L3, i.e. anything that calls the target's real execute() path) unless a
@@ -41,15 +41,15 @@ const PROD_HINTS = [
 /**
  * Is a sandbox declared active? Three independent signals (any one suffices), so this works from a
  * shell (env), a wrapper script (lockfile), or programmatic config.
- *   1. env WHETSTONE_SANDBOX in {1,true,active,on}
- *   2. a lockfile path in env WHETSTONE_SANDBOX_LOCKFILE that exists on disk
+ *   1. env GRISTMILL_SANDBOX in {1,true,active,on}
+ *   2. a lockfile path in env GRISTMILL_SANDBOX_LOCKFILE that exists on disk
  *   3. an explicit { active: true } passed in opts.sandbox
  */
 export function isSandboxActive(opts = {}, env = process.env) {
-  const flag = String(env.WHETSTONE_SANDBOX ?? '').trim().toLowerCase();
+  const flag = String(env.GRISTMILL_SANDBOX ?? '').trim().toLowerCase();
   if (['1', 'true', 'active', 'on', 'yes'].includes(flag)) return true;
   if (opts.sandbox && opts.sandbox.active === true) return true;
-  const lock = env.WHETSTONE_SANDBOX_LOCKFILE;
+  const lock = env.GRISTMILL_SANDBOX_LOCKFILE;
   if (lock && existsSync(lock)) return true;
   return false;
 }
@@ -86,8 +86,8 @@ export function assertSandboxActive({ fidelity, targetEndpoint, sandbox } = {}, 
 
   if (!isSandboxActive({ sandbox }, env)) {
     throw new BlastRadiusError(
-      `Refusing ${fidelity} live run: no sandbox is active. Declare one (WHETSTONE_SANDBOX=1, a ` +
-      `WHETSTONE_SANDBOX_LOCKFILE, or sandbox.active) before calling execute(). See playbooks/SANDBOXING.md.`,
+      `Refusing ${fidelity} live run: no sandbox is active. Declare one (GRISTMILL_SANDBOX=1, a ` +
+      `GRISTMILL_SANDBOX_LOCKFILE, or sandbox.active) before calling execute(). See playbooks/SANDBOXING.md.`,
     );
   }
 
@@ -153,17 +153,17 @@ function runSelfTests() {
     'L2 blocked when no sandbox active');
 
   // L2 with sandbox flag but PROD endpoint → blocked.
-  throws(() => assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.prod.example.edu' }, { WHETSTONE_SANDBOX: '1' }),
+  throws(() => assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.prod.example.edu' }, { GRISTMILL_SANDBOX: '1' }),
     'L2 blocked when endpoint looks production');
 
   // L2 with sandbox flag + unknown endpoint → blocked (fail closed).
-  throws(() => assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.example.edu' }, { WHETSTONE_SANDBOX: '1' }),
+  throws(() => assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.example.edu' }, { GRISTMILL_SANDBOX: '1' }),
     'L2 blocked when endpoint unclassifiable (fail-closed)');
 
   // L2 with sandbox flag + non-prod endpoint → allowed.
-  ok(assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.sandbox.example.edu' }, { WHETSTONE_SANDBOX: '1' }) === true,
+  ok(assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'https://agent.sandbox.example.edu' }, { GRISTMILL_SANDBOX: '1' }) === true,
     'L2 allowed with sandbox + non-prod endpoint');
-  ok(assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'http://localhost:8080' }, { WHETSTONE_SANDBOX: 'true' }) === true,
+  ok(assertSandboxActive({ fidelity: 'L2', targetEndpoint: 'http://localhost:8080' }, { GRISTMILL_SANDBOX: 'true' }) === true,
     'L2 allowed with sandbox + localhost');
 
   // Programmatic sandbox signal works too.

@@ -1,5 +1,5 @@
 /**
- * Whetstone reference runner
+ * Gristmill reference runner
  * ==========================
  * A runnable orchestration of one polishing campaign: characterize -> (generate -> run ->
  * score -> verify -> cluster) x rounds -> plan -> skeptic-gate -> regression pack. It writes the
@@ -9,7 +9,7 @@
  *   - workflowEngine: each role is a real subagent call via the Workflow `agent()` global.
  *     Use this when launching through the Claude Code Workflow tool (see runner/README.md).
  *   - offlineEngine:  each role is a deterministic, dependency-free stand-in driven by the
- *     built-in SimulationAdapter. No LLM, no network. This is what `node whetstone.workflow.js`
+ *     built-in SimulationAdapter. No LLM, no network. This is what `node gristmill.workflow.js`
  *     runs, so the loop, the schemas, the fingerprint/non-repetition engine, the scoring math,
  *     and the artifact chain are all verifiable offline.
  *
@@ -30,7 +30,7 @@ const KIT = resolve(__dirname, '..');
 
 /** Workflow-tool metadata (harmless as a plain export under node). */
 export const meta = {
-  name: 'whetstone-campaign',
+  name: 'gristmill-campaign',
   description: 'Run one closed-loop agent-polishing campaign to a prioritized, gated improvement plan',
   phases: [
     { title: 'Characterize' },
@@ -748,7 +748,7 @@ async function runCampaign({ config, engine, adapter, kitDir = KIT, now = '2026-
 }
 
 // ---------------------------------------------------------------------------
-// CLI entry (offline). Usage: node whetstone.workflow.js [path/to/run-config.json]
+// CLI entry (offline). Usage: node gristmill.workflow.js [path/to/run-config.json]
 // ---------------------------------------------------------------------------
 
 function defaultConfig() {

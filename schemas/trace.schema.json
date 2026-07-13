@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/trace.schema.json",
+  "$id": "https://gristmill.kit/schemas/trace.schema.json",
   "title": "ExecutionTrace",
   "description": "Line-by-line reconstruction of a run. Produced by the Run Simulator (roles/03-run-simulator.md). At L0 the actual_path is a prediction; at L2+ it is captured from a real run via the adapter. Fidelity governs how much weight downstream conclusions carry (rubrics/fidelity-ladder.md).",
   "type": "object",

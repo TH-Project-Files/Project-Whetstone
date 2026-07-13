@@ -1,5 +1,5 @@
 /**
- * Whetstone — Safety Wrapper (safe-execute)
+ * Gristmill — Safety Wrapper (safe-execute)
  * =========================================
  * The harness NEVER calls a target agent's execute() directly. It calls THIS wrapper, which holds
  * the sandbox boundary with an iron grip and hands back only a structured trace. It is deliberately

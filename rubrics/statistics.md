@@ -1,6 +1,6 @@
 # Statistics — sampling, agreement, convergence, and honest significance
 
-Whetstone aims for *defensible prioritization*, not a p-value theater. This file defines what
+Gristmill aims for *defensible prioritization*, not a p-value theater. This file defines what
 "enough evidence" means, how to keep judges trustworthy, when to stop, and — critically — how
 to describe the strength of a conclusion without overclaiming.
 
@@ -39,7 +39,7 @@ fingerprint is appended to `memory/scenario_fingerprints.jsonl`; the gate checks
 full history, so campaigns never repeat across rounds either.
 
 The gate is **computed, never judged**: the orchestrating harness runs it as code (the
-reference implementation is `fingerprintSimilarity` in `runner/whetstone.workflow.js`,
+reference implementation is `fingerprintSimilarity` in `runner/gristmill.workflow.js`,
 including the trigram-cosine text term). An LLM asked "is this too similar?" drifts toward
 whatever keeps its batch alive; a script does not.
 

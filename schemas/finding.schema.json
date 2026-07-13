@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://whetstone.kit/schemas/finding.schema.json",
+  "$id": "https://gristmill.kit/schemas/finding.schema.json",
   "title": "Finding",
   "description": "One discrete weakness observed in a run. Stored append-only in workspace/<campaign>/memory/long_term_findings.jsonl. Field shapes mirror the validated SYSTEM_POLISH_FINDINGS.md model: severity x prevalence x improvement_leverage drives ranking; fidelity + verify_status keep predictions honest.",
   "type": "object",
